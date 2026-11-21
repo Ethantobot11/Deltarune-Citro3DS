@@ -8,6 +8,7 @@ import citro.CitroG;
 import deltarune.assets.GameAssets;
 import deltarune.data.Chapter.ChapterFile;
 import deltarune.Controls;
+import deltarune.assets.JsonUtil;
 import haxe.Json;
 
 using StringTools;
@@ -43,11 +44,8 @@ class ChapterSelectState extends CitroState
 			raw = sanitizeJson(raw);
 			var chapter:Dynamic;
 			try {
-				chapter = Json.parse(raw);
-			} catch (e:Dynamic) {
-				trace('Error parsing Chapter JSON for $chapterFile: $e');
-				continue;
-			}
+			    chapter = JsonUtil.trimKeys(Json.parse(raw));
+			} catch (e:Dynamic) { trace('Error parsing Chapter JSON for $chapterFile: $e'); continue; }
 
 			if (chapter.previousChapter != null && chapter.previousChapter != "") {
 				var inserted = false;
