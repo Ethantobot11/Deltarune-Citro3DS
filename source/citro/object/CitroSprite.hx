@@ -105,20 +105,20 @@ class CitroSprite extends CitroObject {
         ');
         sheetWidth = imageWidth;
         sheetHeight = imageHeight;
-        
+
+        var sheetCount:Int = 1;
+        untyped __cpp__('sheetCount = C2D_SpriteSheetCount(this->ss);');
+        totalFrames = sheetCount;
+
         if (frameWidth > 0 && frameHeight > 0) {
             width = frameWidth;
-            height = frameHeight;         
-            var framesPerRow:Int = Std.int(sheetWidth / frameWidth);
-            var framesPerCol:Int = Std.int(sheetHeight / frameHeight);
-            totalFrames = framesPerRow * framesPerCol;
-            trace("DEBUG loadGraphic: file=" + file + " | sheetWidth=" + sheetWidth + " | frameWidth=" + frameWidth + " | totalFrames=" + totalFrames);         
-            CitroG.caches.setMeta(file + "_frames", totalFrames);
+            height = frameHeight;
+            setSourceRect(0, 0, frameWidth, frameHeight);
         } else {
             width = sheetWidth;
             height = sheetHeight;
         }
-        
+
         setFrame(0);
         return true;
     }
