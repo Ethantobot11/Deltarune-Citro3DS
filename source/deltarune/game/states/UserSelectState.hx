@@ -1,6 +1,7 @@
 package deltarune.game.states;
 
 import citro.state.CitroState;
+import citro.object.CitroText;
 import deltarune.Game;
 #if sys
 import sys.FileSystem;
@@ -8,15 +9,18 @@ import sys.FileSystem;
 
 class UserSelectState extends CitroState
 {
+	var userListText:CitroText;
+
 	override public function create()
 	{
-		Game.initialize();
 		super.create();
+		Game.initialize();
 
 		var users:Array<String> = [];
 
 		#if sys
-		var saveDataDir = 'sdmc:/Deltarune-Citro3DS/savedata/global/';
+		var saveDataDir = 'sdmc:/DELTASHIT/savedata/global/';
+		
 		if (FileSystem.exists(saveDataDir))
 		{
 			for (saveFile in FileSystem.readDirectory(saveDataDir))
@@ -26,12 +30,18 @@ class UserSelectState extends CitroState
 					|| saveFile == "_default"
 					|| saveFile == "save.json")
 					continue;
-				users.push(saveFile);
+
+				if (saveFile.endsWith(".json")) {
+					users.push(saveFile.substr(0, saveFile.length - 5));
+				}
 			}
 		}
 		#end
 
 		users.sort(sortAlphabetically);
+		userListText = new CitroText(20, 20, "Found " + users.length + " save files.");
+		userListText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+		add(userListText);
 	}
 
 	private static function sortAlphabetically(a:String, b:String):Int
