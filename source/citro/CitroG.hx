@@ -88,6 +88,12 @@ class CitroG {
 	public static var caches:CitroCache = new CitroCache();
 
 	/**
+	 * Target frame rate. The main loop throttles update+render to this.
+	 * Set from Options.generalData.fps. 60 = uncapped (vsync).
+	 */
+	public static var targetFps:Int = 60;
+
+	/**
 	 * A global overlay object (like GameFps) that persists across state switches 
 	 * and renders on top of everything, similar to OpenFL's stage children.
 	 */
