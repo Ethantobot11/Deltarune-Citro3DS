@@ -30,9 +30,11 @@ class ChapterSelectState extends CitroState
 		} else if (raw.length > 0 && raw.charCodeAt(0) == 0xFEFF) {
 			raw = raw.substr(1);
 		}
+		
 		var buf = new StringBuf();
 		for (i in 0...raw.length) {
 			var c = raw.charCodeAt(i);
+			if (c == 65533) continue;
 			if (c >= 32 || c == 9 || c == 10 || c == 13) {
 				buf.addChar(c);
 			}
@@ -53,13 +55,18 @@ class ChapterSelectState extends CitroState
 		for (chapterFile in chapterFiles) {
 			var raw = GameAssets.text('data/chapters/$chapterFile');
 			if (raw == null) continue;
-			raw = sanitizeJson(raw);
+			
 			var chapter:ChapterFile;
 			try {
-				chapter = cast JsonUtil.trimKeys(Json.parse(raw));
-			} catch (e:Dynamic) { 
-				trace('Error parsing Chapter JSON for $chapterFile: $e'); 
-				continue; 
+				var cleanRaw = sanitizeJson(raw);
+				chapter = cast JsonUtil.trimKeys(Json.parse(cleanRaw));
+			} catch (e:Dynamic) {
+				try {
+					chapter = cast JsonUtil.trimKeys(Json.parse(raw));
+				} catch (e2:Dynamic) {
+					trace('Error parsing Chapter JSON for $chapterFile: $e2');
+					continue;
+				}
 			}
 
 			if (chapter.previousChapter != null && chapter.previousChapter != "") {
