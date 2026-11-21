@@ -1,5 +1,7 @@
 package deltarune.assets;
 
+using StringTools;
+
 class JsonUtil {
     public static function trimKeys(v:Dynamic):Dynamic {
         if (v == null) return null;
