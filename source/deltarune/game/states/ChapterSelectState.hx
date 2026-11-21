@@ -7,7 +7,6 @@ import citro.object.CitroGroup;
 import citro.CitroG;
 import deltarune.assets.GameAssets;
 import deltarune.data.Chapter.ChapterFile;
-import deltarune.assets.JsonUtil;
 import deltarune.Controls;
 import haxe.Json;
 
@@ -22,23 +21,29 @@ class ChapterSelectState extends CitroState
 	public var currentSelection:Int = 0;
 	public var chapterLabels:Array<CitroGroup> = [];
 	public var chapterData:Array<ChapterFile> = [];
+
 	static function sanitizeJson(raw:String):String
 	{
-	    if (raw == null) return "";
-	    if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
-	        raw = raw.substr(3);
-	    } else if (raw.length > 0 && raw.charCodeAt(0) == 0xFEFF) {
-	        raw = raw.substr(1);
-	    }
-	    
-	    var buf = new StringBuf();
-	    for (i in 0...raw.length) {
-	        var c = raw.charCodeAt(i);
-	        if (c == 9 || c == 10 || c == 13 || (c >= 32 && c != 65533)) {
-	            buf.addChar(c);
-	        }
-	    }
-	    return buf.toString();
+		if (raw == null || raw.length == 0) return "";
+		if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
+			raw = raw.substr(3);
+		} 
+		
+		else if (raw.length > 0 && raw.charCodeAt(0) == 0xFEFF) {
+			raw = raw.substr(1);
+		}
+
+		raw = raw.split("\x00").join("");
+		var buf = new StringBuf();
+		for (i in 0...raw.length) {
+			var c = raw.charCodeAt(i);
+			if (c == 65533) continue;
+			if (c == 9 || c == 10 || c == 13 || c >= 32) {
+				buf.addChar(c);
+			}
+		}
+		
+		return buf.toString();
 	}
 
 	override public function create()
@@ -58,14 +63,10 @@ class ChapterSelectState extends CitroState
 			var chapter:ChapterFile;
 			try {
 				var cleanRaw = sanitizeJson(raw);
-				chapter = cast JsonUtil.trimKeys(Json.parse(cleanRaw));
+				chapter = cast Json.parse(cleanRaw);
 			} catch (e:Dynamic) {
-				try {
-					chapter = cast JsonUtil.trimKeys(Json.parse(raw));
-				} catch (e2:Dynamic) {
-					trace('Error parsing Chapter JSON for $chapterFile: $e2');
-					continue;
-				}
+				trace('Error parsing Chapter JSON for $chapterFile: $e');
+				continue;
 			}
 
 			if (chapter.previousChapter != null && chapter.previousChapter != "") {
