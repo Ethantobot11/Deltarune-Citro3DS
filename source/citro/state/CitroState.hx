@@ -1,7 +1,7 @@
 package citro.state;
 
 //import CrashHandler;
-import deltarune.game
+import deltarune.Game;
 import citro.object.CitroObject;
 import citro.object.CitroText;
 
