@@ -3,6 +3,7 @@ package deltarune.game.states.substates;
 import citro.CitroG;
 import citro.state.CitroSubState;
 import citro.object.CitroText;
+import citro.object.CitroSprite;
 import citro.backend.CitroTween;
 import citro.backend.CitroTimer;
 import citro.backend.CitroTween.CitroEase;
