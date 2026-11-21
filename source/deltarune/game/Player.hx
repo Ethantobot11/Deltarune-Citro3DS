@@ -86,7 +86,8 @@ class Player extends CitroAnimate
 
 	function loadAnimations(folder:String)
 	{
-		JSON = cast GameAssets.getJSON('romfs:/assets/data/characters/$folder/animations.json');
+		JSON = cast JsonUtil.trimKeys(GameAssets.getJSON('romfs:/assets/data/characters/$folder/animations.json'));
+		var cfg = JsonUtil.trimKeys(GameAssets.getJSON('romfs:/assets/data/characters/$folder/config.json'));
 
 		if (JSON == null && folder != 'KrisDarkworld')
 		{
