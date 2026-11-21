@@ -7,8 +7,8 @@ import citro.object.CitroGroup;
 import citro.CitroG;
 import deltarune.assets.GameAssets;
 import deltarune.data.Chapter.ChapterFile;
-import deltarune.Controls;
 import deltarune.assets.JsonUtil;
+import deltarune.Controls;
 import haxe.Json;
 
 using StringTools;
@@ -24,17 +24,20 @@ class ChapterSelectState extends CitroState
 	public var chapterData:Array<ChapterFile> = [];
 	static function sanitizeJson(raw:String):String
 	{
-	    if (raw == null) return "";
-	    if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF)
-	        raw = raw.substr(3);
-	    else if (raw.length > 0 && raw.charCodeAt(0) == 0xFEFF)
-	        raw = raw.substr(1);
-	    var buf = new StringBuf();
-	    for (i in 0...raw.length) {
-	        var c = raw.charCodeAt(i);
-	        if (c >= 32 || c == 9 || c == 10 || c == 13) buf.addChar(c);
-	    }
-	    return buf.toString();
+		if (raw == null) return "";
+		if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
+			raw = raw.substr(3);
+		} else if (raw.length > 0 && raw.charCodeAt(0) == 0xFEFF) {
+			raw = raw.substr(1);
+		}
+		var buf = new StringBuf();
+		for (i in 0...raw.length) {
+			var c = raw.charCodeAt(i);
+			if (c >= 32 || c == 9 || c == 10 || c == 13) {
+				buf.addChar(c);
+			}
+		}
+		return buf.toString();
 	}
 
 	override public function create()
@@ -51,10 +54,13 @@ class ChapterSelectState extends CitroState
 			var raw = GameAssets.text('data/chapters/$chapterFile');
 			if (raw == null) continue;
 			raw = sanitizeJson(raw);
-			var chapter:Dynamic;
+			var chapter:ChapterFile;
 			try {
-			    chapter = JsonUtil.trimKeys(Json.parse(raw));
-			} catch (e:Dynamic) { trace('Error parsing Chapter JSON for $chapterFile: $e'); continue; }
+				chapter = cast JsonUtil.trimKeys(Json.parse(raw));
+			} catch (e:Dynamic) { 
+				trace('Error parsing Chapter JSON for $chapterFile: $e'); 
+				continue; 
+			}
 
 			if (chapter.previousChapter != null && chapter.previousChapter != "") {
 				var inserted = false;
@@ -73,20 +79,21 @@ class ChapterSelectState extends CitroState
 
 		for (i in 0...chapterData.length) {
 			var chapterContainer = new CitroGroup();
+			var data = chapterData[i];
 
-			var numText = new CitroText(24, 5 + (30 * i), chapterData[i].chapterSelect.label);
+			var numText = new CitroText(24, 5 + (30 * i), data.chapterSelect.label);
 			numText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 			numText.color = 0xFFFFFFFF;
 			chapterContainer.add(numText);
 
-			var titleText = new CitroText(84, 5 + (30 * i), chapterData[i].chapterSelect.title);
+			var titleText = new CitroText(84, 5 + (30 * i), data.chapterSelect.title);
 			titleText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 			titleText.alignment = CENTER;
 			titleText.color = 0xFFFFFFFF;
 			chapterContainer.add(titleText);
 
 			var chIcon = new CitroSprite(276, 5 + (30 * i));
-			chIcon.loadGraphic('romfs:/assets/images/ui/chapter_select/ch_icon_${chapterData[i].chapterSelect.iconSuffix}.t3x');
+			chIcon.loadGraphic('romfs:/assets/images/ui/chapter_select/ch_icon_${data.chapterSelect.iconSuffix}.t3x');
 			chIcon.color = 0xFFFFFFFF;
 			chapterContainer.add(chIcon);
 
@@ -149,12 +156,7 @@ class ChapterSelectState extends CitroState
 			quitText.color = 0xFFFFFFFF;
 		} else if (currentSelection < chapterLabels.length && !isChapterLocked(currentSelection)) {
 			for (m in chapterLabels[currentSelection].members) {
-				var t:CitroText = null;
-				if ((t = Type.getClass(m) == CitroText ? cast m : null) != null) {
-					t.color = 0xFFFFFFFF;
-				} else {
-					m.color = 0xFFFFFFFF;
-				}
+				m.color = 0xFFFFFFFF;
 			}
 		}
 
