@@ -25,6 +25,9 @@ class Main
 		Game.border = new ConsoleBorder();
 		Game.initialize();
 		Controls.addControllerToast();
+		Game.framerateDisplay = new GameFps();
+		Game.framerateDisplay.bottom = true;
+		CitroG.globalOverlay = Game.framerateDisplay;
 		var initialState = new MenuState();
 		CitroGame.start(initialState);
 	}
