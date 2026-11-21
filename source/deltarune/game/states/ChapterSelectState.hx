@@ -4,7 +4,6 @@ import citro.state.CitroState;
 import citro.object.CitroSprite;
 import citro.object.CitroText;
 import citro.object.CitroGroup;
-import citro.backend.CitroTween;
 import citro.CitroG;
 import deltarune.assets.GameAssets;
 import deltarune.data.Chapter.ChapterFile;
@@ -28,61 +27,45 @@ class ChapterSelectState extends CitroState
 		var chapterFiles = GameAssets.list("data/chapters/");
 		chapterFiles = chapterFiles.filter(function(s:String) return s.endsWith(".json"));
 
-		for (chapterFile in chapterFiles)
-		{
+		for (chapterFile in chapterFiles) {
 			var raw = GameAssets.text('data/chapters/$chapterFile');
-			if (raw == null)
-				continue;
-			try
-			{
+			if (raw == null) continue;
+			try {
 				var chapter:Dynamic = Json.parse(raw);
-				if (chapter.previousChapter != null && chapter.previousChapter != "")
-				{
+				if (chapter.previousChapter != null && chapter.previousChapter != "") {
 					var inserted = false;
-					for (i in 0...chapterData.length)
-					{
-						if (chapterData[i].id == chapter.previousChapter)
-						{
+					for (i in 0...chapterData.length) {
+						if (chapterData[i].id == chapter.previousChapter) {
 							chapterData.insert(i + 1, chapter);
 							inserted = true;
 							break;
 						}
 					}
-					if (!inserted)
-						chapterData.push(chapter);
-				}
-				else
-				{
+					if (!inserted) chapterData.push(chapter);
+				} else {
 					chapterData.push(chapter);
 				}
-			}
-			catch (e:Dynamic)
-			{
+			} catch (e:Dynamic) {
 				trace('Error parsing Chapter JSON for $chapterFile');
 			}
 		}
 
-		for (i in 0...chapterData.length)
-		{
+		for (i in 0...chapterData.length) {
 			var chapterContainer = new CitroGroup();
-
-			var numText = new CitroText(48, 10 + (60 * i), chapterData[i].chapterSelect.label);
+			var numText = new CitroText(24, 5 + (30 * i), chapterData[i].chapterSelect.label);
 			numText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 			chapterContainer.add(numText);
 
-			var titleText = new CitroText(168, 10 + (60 * i), chapterData[i].chapterSelect.title);
+			var titleText = new CitroText(84, 5 + (30 * i), chapterData[i].chapterSelect.title);
 			titleText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 			titleText.alignment = CENTER;
 			chapterContainer.add(titleText);
 
-			var chIcon = new CitroSprite(552, 10 + (60 * i));
+			var chIcon = new CitroSprite(276, 5 + (30 * i));
 			chIcon.loadGraphic('romfs:/assets/images/ui/chapter_select/ch_icon_${chapterData[i].chapterSelect.iconSuffix}.t3x');
-			chIcon.scale.x = 2;
-			chIcon.scale.y = 2;
 			chapterContainer.add(chIcon);
 
-			if (isChapterLocked(i))
-			{
+			if (isChapterLocked(i)) {
 				chIcon.alpha = 0.5;
 				numText.alpha = 0.5;
 				titleText.alpha = 0.5;
@@ -92,18 +75,16 @@ class ChapterSelectState extends CitroState
 			chapterLabels.push(chapterContainer);
 		}
 
-		selectorSprite = new CitroSprite(20, 24);
+		selectorSprite = new CitroSprite(10, 12);
 		selectorSprite.loadGraphic("romfs:/assets/images/ui/chapter_select/selector.t3x");
-		selectorSprite.scale.x = 2;
-		selectorSprite.scale.y = 2;
 		add(selectorSprite);
 
-		var infoText = new CitroText(12, 200, "(C) Toby Fox 2018-2025\nDELTARUNE v1.0");
+		var infoText = new CitroText(6, 210, "(C) Toby Fox 2018-2025\nDELTARUNE v1.0");
 		infoText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 		infoText.alignment = LEFT;
 		add(infoText);
 
-		quitText = new CitroText(280, 200, "Quit");
+		quitText = new CitroText(280, 210, "Quit");
 		quitText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 		quitText.alignment = CENTER;
 		add(quitText);
@@ -115,64 +96,46 @@ class ChapterSelectState extends CitroState
 	{
 		super.update(delta);
 
-		if (Controls.up.justPressed)
-		{
+		if (Controls.up.justPressed) {
 			setSelection(currentSelection == -1 ? chapterLabels.length - 1 : currentSelection - 1);
 		}
-		if (Controls.down.justPressed)
-		{
+		if (Controls.down.justPressed) {
 			setSelection(currentSelection == chapterLabels.length - 1 ? -1 : currentSelection + 1);
 		}
 
-		if (Controls.primary.justPressed)
-		{
-			if (currentSelection == -1)
-			{
+		if (Controls.primary.justPressed) {
+			if (currentSelection == -1) {
 				CitroG.exitGame();
-			}
-			else if (!isChapterLocked(currentSelection))
-			{
+			} else if (!isChapterLocked(currentSelection)) {
 				CitroG.switchState(new TransitionState(() -> new SaveSelectState()));
 			}
 		}
 	}
 
-	public function isChapterLocked(index:Int):Bool
-	{
+	public function isChapterLocked(index:Int):Bool {
 		return chapterData[index].type == "dummy"
 			|| (chapterData[index].requiredChapters != null && chapterData[index].requiredChapters.length > 0);
 	}
 
-	public function setSelection(index:Int)
-	{
-		if (currentSelection == -1)
-		{
+	public function setSelection(index:Int) {
+		if (currentSelection == -1) {
 			quitText.alpha = 1.0;
-		}
-		else if (currentSelection < chapterLabels.length && !isChapterLocked(currentSelection))
-		{
-			for (lbl in chapterLabels)
-				for (m in lbl.members)
-					m.alpha = 1.0;
+		} else if (currentSelection < chapterLabels.length && !isChapterLocked(currentSelection)) {
+			for (lbl in chapterLabels) for (m in lbl.members) m.alpha = 1.0;
 		}
 
 		currentSelection = index;
 
-		if (currentSelection == -1)
-		{
+		if (currentSelection == -1) {
 			quitText.alpha = 0.5;
-			selectorSprite.x = 264;
+			selectorSprite.x = 280;
 			selectorSprite.y = 210;
-		}
-		else if (currentSelection < chapterLabels.length)
-		{
-			if (!isChapterLocked(currentSelection))
-			{
-				for (m in chapterLabels[currentSelection].members)
-					m.alpha = 0.5;
+		} else if (currentSelection < chapterLabels.length) {
+			if (!isChapterLocked(currentSelection)) {
+				for (m in chapterLabels[currentSelection].members) m.alpha = 0.5;
 			}
-			selectorSprite.x = 20;
-			selectorSprite.y = 24 + (60 * currentSelection);
+			selectorSprite.x = 10;
+			selectorSprite.y = 12 + (30 * currentSelection);
 		}
 	}
 }
