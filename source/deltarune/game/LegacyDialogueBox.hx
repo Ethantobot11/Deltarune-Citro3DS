@@ -38,7 +38,7 @@ class LegacyDialogueBox extends CitroGroup
 		portrait.scale.y = 2;
 		add(portrait);
 
-		typeText = new CitroTypeText(52, 24, 496, "");
+		typeText = new CitroTypeText(52, 24, 200, "");
 		typeText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 		add(typeText);
 
