@@ -54,6 +54,11 @@ class PlayState extends CitroState
 		instance = this;
 
 		map = new CitroOgmo3Loader('romfs:/assets/data/ogmoData.ogmo', 'romfs:/assets/data/levels/level$levelString.json');
+		if (map.level == null || !Reflect.hasField(map.level, "layers")) {
+			trace("CRITICAL ERROR: Level data failed to parse! Check encoding.");
+			return; 
+		}
+
 		background = map.loadTilemap("romfs:/assets/images/cyberassetsbackgounds.t3x", "background", 16);
 		add(background);
 
@@ -71,6 +76,7 @@ class PlayState extends CitroState
 		add(player);
 		add(player.collider);
 		add(player.interactionCollider);
+		
 		map.loadEntities(function(entity:Dynamic)
 		{
 			switch (entity.name)
