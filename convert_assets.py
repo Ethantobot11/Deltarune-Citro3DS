@@ -3,7 +3,6 @@ import subprocess
 import shutil
 import xml.etree.ElementTree as ET
 import re
-import json
 
 try:
     from PIL import Image
@@ -21,77 +20,6 @@ def get_tool_path(tool_name: str) -> str:
     if os.path.exists(win_path): return win_path
     return tool_name
 
-def clean_all_jsons(assets_dir="assets"):
-    """Strips trailing spaces from JSON keys and removes UTF-8 BOMs to prevent C++ parsing errors."""
-    print("\n--- Cleaning JSON files (removing trailing spaces and BOM) ---")
-    cleaned_count = 0
-    for root, dirs, files in os.walk(assets_dir):
-        for file in files:
-            if file.endswith(".json"):
-                file_path = os.path.join(root, file)
-                try:
-                    with open(file_path, 'r', encoding='utf-8-sig') as f:
-                        data = json.load(f)
-                    
-                    def strip_keys(obj):
-                        if isinstance(obj, dict):
-                            return {k.strip(): strip_keys(v) for k, v in obj.items()}
-                        elif isinstance(obj, list):
-                            return [strip_keys(item) for item in obj]
-                        return obj
-                        
-                    cleaned_data = strip_keys(data)
-                    
-                    with open(file_path, 'w', encoding='utf-8') as f:
-                        json.dump(cleaned_data, f, indent=2, ensure_ascii=False)
-                    cleaned_count += 1
-                except Exception as e:
-                    print(f"  WARNING: Could not clean {file_path}: {e}")
-    print(f"Successfully cleaned {cleaned_count} JSON files.")
-
-def report_unused_assets(assets_dir="assets", source_dir="source"):
-    """Scans source code to find source assets that are never referenced."""
-    print("\n--- Scanning source code for unused assets ---")
-    used_assets = set()
-    pattern = re.compile(r"['\"](?:romfs:/)?(?:assets/)?([^'\"]+\.(?:t3x|bcfnt|cwav|json|ogg|mp3|wav|png|xml|ttf|otf))['\"]", re.IGNORECASE)
-    
-    for root, dirs, files in os.walk(source_dir):
-        for file in files:
-            if file.endswith(".hx"):
-                try:
-                    with open(os.path.join(root, file), 'r', encoding='utf-8') as f:
-                        for match in pattern.findall(f.read()):
-                            clean = match.strip('/').replace('\\', '/').lower()
-                            used_assets.add(clean)
-                            used_assets.add(os.path.basename(clean))
-                except Exception:
-                    pass
-
-    unused_files = []
-    total_unused_size = 0
-    
-    for root, dirs, files in os.walk(assets_dir):
-        for file in files:
-            if file.lower().endswith(('.png', '.xml', '.json', '.ttf', '.otf', '.wav', '.mp3', '.ogg')):
-                rel_path = os.path.relpath(os.path.join(root, file), assets_dir).replace('\\', '/').lower()
-                filename = file.lower()
-                
-                if rel_path not in used_assets and filename not in used_assets:
-                    size = os.path.getsize(os.path.join(root, file))
-                    unused_files.append((rel_path, size))
-                    total_unused_size += size
-
-    if unused_files:
-        print(f"\n⚠️  Found {len(unused_files)} potentially unused source files (Total: {total_unused_size / (1024*1024):.2f} MB):")
-        for path, size in unused_files[:30]:
-            print(f"  - {path} ({size / 1024:.1f} KB)")
-        if len(unused_files) > 30:
-            print(f"  ... and {len(unused_files) - 30} more.")
-        print("\n📌 NOTE: This is a heuristic check. Dynamic paths (e.g., f'characters/{char}/...') might be flagged.")
-        print("📌 ACTION: Please review this list and manually delete the files you are sure are unused.")
-    else:
-        print("✅ No obviously unused source assets found.")
-
 def main():
     os.makedirs("assets/romfs/haxe3ds", exist_ok=True)
     with open("assets/romfs/haxe3ds/version", "w") as f: 
@@ -100,8 +28,6 @@ def main():
     if not os.path.exists("assets"):
         print("No 'assets' directory found. Skipping conversion.")
         return
-        
-    clean_all_jsons("assets")
 
     excluded_files = {
         os.path.normpath("assets/resources/audio.wav"),
@@ -117,7 +43,7 @@ def main():
     cwavtool_path = get_tool_path("cwavtool")
     mkbcfnt_path = get_tool_path("mkbcfnt")
     
-    print(f"\nUsing tex3ds at: {tex3ds_path}")
+    print(f"Using tex3ds at: {tex3ds_path}")
     print(f"Using cwavtool at: {cwavtool_path}")
     print(f"Using mkbcfnt at: {mkbcfnt_path}")
 
@@ -250,7 +176,6 @@ def main():
                 subprocess.run(cmd, check=True)
                 if ext == ".wav": os.remove(file_path)
             except Exception as e: print(f"Error cwavtool: {e}")
-    report_unused_assets("assets", "source")
 
 if __name__ == "__main__":
     main()
