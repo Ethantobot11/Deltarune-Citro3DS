@@ -5,7 +5,7 @@ import citro.state.CitroSubState;
 import citro.object.CitroText;
 import citro.backend.CitroTween;
 import citro.backend.CitroTimer;
-import citro.backend.CitroEase;
+import citro.backend.CitroTween.CitroEase;
 import citro.backend.CitroColor;
 import deltarune.assets.GameAssets;
 import deltarune.assets.Paths;

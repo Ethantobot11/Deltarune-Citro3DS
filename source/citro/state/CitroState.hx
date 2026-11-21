@@ -1,6 +1,6 @@
 package citro.state;
 
-import CrashHandler;
+//import CrashHandler;
 import citro.object.CitroObject;
 import citro.object.CitroText;
 

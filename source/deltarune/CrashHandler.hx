@@ -1,4 +1,4 @@
-package source.deltarune;
+package deltarune;
 
 #if (!wiiu || !cafe)
 import haxe.CallStack;

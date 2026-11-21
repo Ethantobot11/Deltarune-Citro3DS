@@ -32,7 +32,6 @@ class Paths
 
 	public static inline function getSound(file:String):String
 			return 'romfs:/assets/sounds/$file.cwav';
-	}
 
 	//why does this exist?
 	public static inline function getPortrait(character:String)
