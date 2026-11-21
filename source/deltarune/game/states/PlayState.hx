@@ -122,7 +122,7 @@ class PlayState extends CitroState
 			}
 		}, "collision");
 
-		dialogue = new LegacyDialogueBox(0, 400, 'romfs:/assets/data/dialogue/testDialogue.json');
+		dialogue = new LegacyDialogueBox(0, 0, 'romfs:/assets/data/dialogue/testDialogue.json');
 		dialogue.bottom = true;
 		add(dialogue);
 	}
@@ -168,7 +168,7 @@ class PlayState extends CitroState
 	public function startDialogue(filename:String)
 	{
 		remove(dialogue);
-		dialogue = new LegacyDialogueBox(0, 400, 'romfs:/assets/data/dialogue/$filename.json');
+		dialogue = new LegacyDialogueBox(0, 0, 'romfs:/assets/data/dialogue/$filename.json');
 		dialogue.bottom = true;
 		add(dialogue);
 		dialogue.activated = true;
