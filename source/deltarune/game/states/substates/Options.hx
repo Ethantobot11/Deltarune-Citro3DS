@@ -11,6 +11,7 @@ import citro.backend.CitroColor;
 import deltarune.assets.GameAssets;
 import deltarune.assets.Paths;
 import deltarune.game.states.MenuState;
+import deltarune.game.MenuBackground;
 import deltarune.tools.LocalSave;
 import deltarune.Game;
 import deltarune.Controls;
@@ -184,9 +185,8 @@ class Options extends CitroSubState
 	override public function create()
 	{
 		super.create();
-        var bg = new CitroSprite(0, 0);
-        bg.makeGraphic(400, 240, 0xFF000000);
-        add(bg);
+        var bg = new MenuBackground();
+		add(bg);
 
 		returning = false;
 		entering = true;
