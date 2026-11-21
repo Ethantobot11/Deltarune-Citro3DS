@@ -284,10 +284,9 @@ class Option extends CitroText
 
 	public function new(idx:Int, text:String, value:Dynamic, field:String, type:String, ?properties:OptionConfig)
 	{
-		super(390, 20 + (idx * 30), text);
-		loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
-
-		alignment = RIGHT;
+		super(-10, 20 + (idx * 30), text);
+	    loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+	    alignment = RIGHT;
 		this.properties = properties;
 		this.optIndex = idx;
 		this.value = value;
