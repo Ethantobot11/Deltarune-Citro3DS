@@ -3,6 +3,7 @@ package;
 import citro.CitroGame;
 import deltarune.CrashHandler;
 import deltarune.Game;
+import deltarune.GameFps;
 import deltarune.Controls;
 import deltarune.ConsoleBorder;
 import deltarune.assets.GameAssets;
