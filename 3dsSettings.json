@@ -1,0 +1,26 @@
+{
+	"settings": {
+		"linkOptions": {
+			"ip": "",
+			"openEmuIfTransferFailed": false,
+			"link3dsToConsole": true
+		},
+		"libraries": [
+			"haxe3ds",
+			"libcwav",
+			"libncsnd"
+		],
+		"defines": [],
+		"compileAsCIA": true,
+		"optimizations": {
+			"o2Flag": false,
+			"gFlag": false
+		},
+		"deleteTempFiles": true
+	},
+	"metadata": {
+		"title": "Deltarune-Citro3DS",
+		"description": "Not by me, but this is a port of Deltarune to the 3DS. I just made it easier to compile and run.",
+		"author": "Ethantobot"
+	}
+}
