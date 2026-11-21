@@ -15,15 +15,13 @@ class Game
 	public static var chapter:Dynamic;
 	public static var framerateDisplay:Dynamic;
 	public static var border:Dynamic;
+	public static var currentChapterId:String = 'chapter_1';
 
 	public static function initialize():Void
 	{
-		if (initialized)
-			return;
+		if (initialized) return;
 
-		if (Game.border != null) {
-			Game.border.switchTo();
-		}
+		if (Game.border != null) Game.border.switchTo();
 
 		globalSave = new LocalSave();
 		globalSave.bind('_default', 'savedata/global');
@@ -32,17 +30,9 @@ class Game
 		chapterSave.bind('placeholder_save', 'savedata');
 
 		Options.initialize();
-
 		initialized = true;
 	}
 
-	public static inline function nullSwitch<T>(a:T, b:T):T
-	{
-		return a != null ? a : b;
-	}
-
-	public static function set_developerMode(value:Bool):Bool
-	{
-		return developerMode = value;
-	}
+	public static inline function nullSwitch<T>(a:T, b:T):T return a != null ? a : b;
+	public static function set_developerMode(value:Bool):Bool return developerMode = value;
 }
