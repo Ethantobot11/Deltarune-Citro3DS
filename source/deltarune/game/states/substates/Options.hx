@@ -48,6 +48,15 @@ class Options extends CitroSubState
 		room_y: 0
 	};
 
+	private static function defaultGeneral():Dynamic return {
+		fps: 30,
+		show_fps: false,
+		show_memory: false,
+		auto_run: false,
+		music_volume: 1.0,
+		sound_volume: 1.0
+	};
+
 	public static var save_destination:String;
 	public static var save_id:Int;
 
@@ -55,23 +64,24 @@ class Options extends CitroSubState
 	{
 		if (Game.globalSave != null && Game.globalSave.data.general != null)
 		{
-			generalData = Game.globalSave.data.general;
+			var merged:Dynamic = {};
+			for (f in Reflect.fields(defaultGeneral())) Reflect.setField(merged, f, Reflect.field(defaultGeneral(), f));
+			for (f in Reflect.fields(Game.globalSave.data.general)) Reflect.setField(merged, f, Reflect.field(Game.globalSave.data.general, f));
+			generalData = merged;
+			Game.globalSave.data.general = generalData;
 		}
 		else if (Game.globalSave != null)
 		{
+			generalData = defaultGeneral();
 			Game.globalSave.data.general = generalData;
 			Game.globalSave.flush();
 		}
+		CitroG.targetFps = (generalData.fps is Int) ? generalData.fps : 60;
 
 		if (Game.chapterSave != null && Game.chapterSave.data.general == null)
-		{
 			Game.chapterSave.data.general = defaultData;
-		}
-
 		if (Game.chapterSave != null)
-		{
 			currentData = Game.chapterSave.data.general;
-		}
 	}
 
 	public static function loadNewSave(target_save_destination:String = null, target_save_id:Int = null)
@@ -201,9 +211,13 @@ class Options extends CitroSubState
 		}
 
 		CitroTimer.start(0.5, postCreate);
-
 		var maxFpsOption = new Option(options.length, 'FPS', generalData.fps, 'fps', 'int', {
-			change: 5, min: 30, max: 60, change_func: function(value, change) { Options.setGeneralData('fps', value); }, current: false
+			change: 5, min: 30, max: 60,
+			change_func: function(value, change) {
+				Options.setGeneralData('fps', value);
+				CitroG.targetFps = (value is Int) ? value : 60;
+			},
+			current: false
 		});
 		options.push(maxFpsOption); add(maxFpsOption);
 
