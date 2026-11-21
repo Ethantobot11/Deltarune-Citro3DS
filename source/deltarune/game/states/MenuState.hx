@@ -9,6 +9,7 @@ import deltarune.Controls;
 import deltarune.Game;
 import deltarune.game.states.substates.Credits;
 import deltarune.game.states.substates.Options;
+import deltarune.game.states.substates.ChapterSelectState;
 
 class MenuState extends CitroState
 {
@@ -54,7 +55,8 @@ class MenuState extends CitroState
 	{
 		if (!leaving) {
 			leaving = true;
-			CitroG.switchState(new PlayState());
+			CitroG.switchState(new ChapterSelectState());
+			//CitroG.switchState(new PlayState());
 		}
 	}
 
