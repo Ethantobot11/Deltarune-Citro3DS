@@ -7,7 +7,7 @@ import deltarune.Controls;
 import deltarune.ConsoleBorder;
 import deltarune.assets.GameAssets;
 import deltarune.assets.SysAssetSystem;
-import deltarune.game.states.ChapterSelectState;
+import deltarune.game.states.MenuState;
 
 class Main
 {
@@ -25,7 +25,7 @@ class Main
 		Game.border = new ConsoleBorder();
 		Game.initialize();
 		Controls.addControllerToast();
-		var initialState = new ChapterSelectState();
+		var initialState = new MenuState();
 		CitroGame.start(initialState);
 	}
 
