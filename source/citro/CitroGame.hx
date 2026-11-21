@@ -65,7 +65,7 @@ class CitroGame {
 			bottomScreen = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 		');
 
-		(CitroG.state = state).create();
+				(CitroG.state = state).create();
 
 		var lastFrame:Int = OS.time.toInt();
 
@@ -73,13 +73,9 @@ class CitroGame {
 			final now:Int = OS.time.toInt();
 			final target = CitroG.targetFps > 0 ? CitroG.targetFps : 60;
 			final interval = Std.int(1000 / target);
-			if (now - lastFrame < interval) {
-				continue;
-			}
-
 			var frameDelta = now - lastFrame;
 			if (frameDelta < 1) frameDelta = 1;
-			if (frameDelta > 33) frameDelta = 33;
+			if (frameDelta > 100) frameDelta = 100;
 			CitroG.deltaTime = frameDelta;
 			lastFrame = now;
 
@@ -113,6 +109,11 @@ class CitroGame {
 				C2D_Flush();
 				C3D_FrameEnd(0);
 			');
+
+			final spent = OS.time.toInt() - now;
+			if (spent < interval) {
+				Sys.sleep((interval - spent) / 1000.0);
+			}
 		}
 
 		untyped __cpp__('
