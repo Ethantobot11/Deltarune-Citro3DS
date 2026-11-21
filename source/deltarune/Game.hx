@@ -1,9 +1,8 @@
 package deltarune;
 
-import deltarune.data.Chapter;
 import deltarune.tools.LocalSave;
-import citro.CitroSave;
 import deltarune.game.states.substates.Options;
+
 class Game
 {
 	public static var consoleArguments:Array<String>;
@@ -13,9 +12,7 @@ class Game
 
 	public static var globalSave:Dynamic;
 	public static var chapterSave:Dynamic;
-
 	public static var chapter:Dynamic;
-
 	public static var framerateDisplay:Dynamic;
 	public static var border:Dynamic;
 
@@ -24,7 +21,9 @@ class Game
 		if (initialized)
 			return;
 
-		Game.border.switchTo();
+		if (Game.border != null) {
+			Game.border.switchTo();
+		}
 
 		globalSave = new LocalSave();
 		globalSave.bind('_default', 'savedata/global');
