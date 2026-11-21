@@ -10,7 +10,8 @@ class JsonUtil {
             for (i in 0...a.length) a[i] = trimKeys(a[i]);
             return a;
         }
-        if (Std.isOfType(v, String)) return v;
+        if (Std.isOfType(v, String)) return v.trim(); 
+        
         if (Reflect.isObject(v)) {
             var out:Dynamic = {};
             for (k in Reflect.fields(v)) {
