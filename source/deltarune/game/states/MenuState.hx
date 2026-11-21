@@ -3,6 +3,8 @@ package deltarune.game.states;
 import citro.CitroG;
 import citro.state.CitroState;
 import citro.object.CitroButton;
+import deltarune.assets.GameAssets;
+import deltarune.assets.Paths;
 import deltarune.game.MenuBackground;
 import deltarune.Controls;
 import deltarune.Game;
@@ -22,6 +24,8 @@ class MenuState extends CitroState
     {
         super.create();
         instance = this;
+
+        CitroG.sound.playMusic(GameAssets.music(Paths.getMusic('Before the Story')), 0.8, true);
 
         coolBG = new MenuBackground();
         add(coolBG);
