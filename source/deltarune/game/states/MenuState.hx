@@ -28,11 +28,11 @@ class MenuState extends CitroState
 		instance = this;
 
 		coolBG = new CitroSprite(0, 0);
-		coolBG.loadGraphic('romfs:/assets/images/menuBG.t3x', 320, 240);
-		coolBG.scale.x = 400 / 320;
-		coolBG.scale.y = 240 / 240;
-		coolBG.screenCenter(XY);
-		add(coolBG);
+        coolBG.loadGraphic('romfs:/assets/images/menuBG.t3x');
+        coolBG.scale.x = CitroG.WIDTH / coolBG.width;
+        coolBG.scale.y = CitroG.HEIGHT / coolBG.height;
+        coolBG.screenCenter(XY);
+        add(coolBG);
 
 		playButton = new CitroButton(80, 40, 160, 40, "Play", clickPlay);
 		playButton.bottom = true;
