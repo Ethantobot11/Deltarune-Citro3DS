@@ -45,7 +45,7 @@ jobs:
       - name: Install Console Toolchains & Dependencies
         run: |
           if [ "${{ inputs.name }}" = "Nintendo 3DS" ]; then
-            dkp-pacman -S --noconfirm --needed 3ds-dev citro3d citro2d 3ds-portlibs general-tools 3ds-mkbcfnt
+            dkp-pacman -S --noconfirm --needed 3ds-dev citro3d citro2d 3ds-portlibs general-tools
             git clone https://github.com/PabloMK7/libcwav.git --recursive
             cd libcwav
             make install
