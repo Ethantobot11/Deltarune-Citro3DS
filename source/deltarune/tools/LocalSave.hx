@@ -29,7 +29,7 @@ class LocalSave
 		ensureMount();
 		if (name == null || name == "") return false;
 
-		var dir = 'sdmc:/Deltarune-Citro3DS/savedata/global/' + (path != null ? path.replace('\\', '/').trim() : '');
+		var dir = 'sdmc:/Deltarune-Citro3DS' + (path != null ? path.replace('\\', '/').trim() : '');
 		if (dir.length > 0 && !dir.endsWith('/')) dir += '/';
 		if (!FileSystem.exists(dir)) {
 			try FileSystem.createDirectory(dir) catch (e:Dynamic) {}
