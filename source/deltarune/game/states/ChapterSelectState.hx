@@ -33,6 +33,7 @@ class ChapterSelectState extends CitroState
 	{
 		super.create();
 		instance = this;
+		CitroG.sound.stopMusic();
 		CitroG.sound.play('romfs:/assets/music/DRONE.cwav', 0.8, true);
 
 		var chapterFiles = GameAssets.list("data/chapters/");
