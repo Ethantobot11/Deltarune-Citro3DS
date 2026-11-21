@@ -29,7 +29,7 @@ class LocalSave
 		ensureMount();
 		if (name == null || name == "") return false;
 
-		var dir = 'sdmc:/DELTASHIT/' + (path != null ? path.replace('\\', '/').trim() : '');
+		var dir = 'sdmc:/DELTASHIT/savedata/global/' + (path != null ? path.replace('\\', '/').trim() : '');
 		if (dir.length > 0 && !dir.endsWith('/')) dir += '/';
 		if (!FileSystem.exists(dir)) {
 			try FileSystem.createDirectory(dir) catch (e:Dynamic) {}
