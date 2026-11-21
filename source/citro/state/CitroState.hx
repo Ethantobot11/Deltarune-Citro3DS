@@ -1,8 +1,5 @@
 package citro.state;
 
-//import CrashHandler;
-import deltarune.GameFps;
-import deltarune.Game;
 import citro.object.CitroObject;
 import citro.object.CitroText;
 
@@ -13,9 +10,6 @@ class CitroState {
     public function new() {};
 
     public function create() {
-        if (Game.framerateDisplay != null) {
-            Game.framerateDisplay = new GameFps();
-        }
     };
 
     public function update(delta:Int) {
