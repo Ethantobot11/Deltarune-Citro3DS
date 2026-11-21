@@ -12,14 +12,16 @@ class CitroSoundSystem {
         #end
     }
 
-    public function playMusic(path:String, ?vol:Float = 1.0):Void {
-        if (currentMusic != null && currentMusic.path == path && currentMusic.isPlaying) {
+    public function playMusic(path:String, ?vol:Float = 1.0, ?looped:Bool = true):Void {
+        if (currentMusic != null && currentMusic.path == path && currentMusic.isPlaying && currentMusic.looped == looped) {
             return;
         }
+        
         stopMusic();
+        
         currentMusic = new CitroSound(path);
         currentMusic.volume = muted ? 0.0 : (vol != null ? vol : this.volume);
-        currentMusic.looped = true;
+        currentMusic.looped = looped;
         currentMusic.play();
         activeSounds.push(currentMusic);
     }
