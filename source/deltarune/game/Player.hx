@@ -4,6 +4,7 @@ import citro.object.CitroAnimate;
 import citro.object.CitroObject;
 import citro.CitroG;
 import deltarune.Controls;
+import deltarune.assets.JsonUtil;
 import deltarune.assets.GameAssets;
 import haxe.Json;
 
