@@ -1,14 +1,12 @@
 package deltarune.game;
 
-import flixel.addons.transition.FlxTransitionableState;
+import citro.state.CitroState;
 
-class State extends FlxTransitionableState
+class State extends CitroState
 {
 	override public function create()
 	{
-		// init the game if it hasnt already been
 		Game.initialize();
-
 		super.create();
 	}
 }

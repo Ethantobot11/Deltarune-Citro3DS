@@ -1,48 +1,60 @@
 package deltarune.game.objects;
 
-import flixel.FlxSprite;
-import flixel.FlxObject;
+import citro.object.CitroObject;
+import citro.object.CitroSprite;
 
-/**
- * Base class for interactable objects, IMPORTANT! When extending 
- * use super() first before anything
- */
-class InteractableSprite extends FlxSprite implements IInteractableSprite
+class InteractableSprite extends CitroSprite
 {
-    public var interactionHitbox:FlxObject;
-    public var autoTriggered:Bool;
-    public var interactionCount:Int;
-    public var objectValues:Dynamic;
+	public var interactionHitbox:CitroObject;
+	public var autoTriggered:Bool;
+	public var interactionCount:Int;
+	public var objectValues:Dynamic;
 
-    public function new(X:Float, Y:Float)
-    {
-        autoTriggered = false;
-        interactionCount = 0;
-		objectValues = {};
-        super(X,Y);
-    }
-
-    public function getInteractionHitbox():FlxObject
-        return interactionHitbox;
-
-    public function onInteraction()
-	    interactionCount++;
-
-    override public function destroy()
-    {
-        interactionHitbox.destroy();
+	public function new(x:Float, y:Float)
+	{
+		super(x, y);
 		autoTriggered = false;
-        objectValues = {};
+		interactionCount = 0;
+		objectValues = {};
+		interactionHitbox = new CitroObject();
+		interactionHitbox.x = x;
+		interactionHitbox.y = y;
+		interactionHitbox.width = 32;
+		interactionHitbox.height = 32;
+	}
 
-        super.destroy();
-    }
+	public function onInteraction()
+	{
+		interactionCount++;
+	}
+
+	override public function update():Bool
+	{
+		interactionHitbox.x = x;
+		interactionHitbox.y = y;
+		return super.update();
+	}
+
+	override public function destroy()
+	{
+		interactionHitbox.destroy();
+		super.destroy();
+	}
 }
 
-interface IInteractableSprite
+class Sign extends InteractableSprite
 {
-    public var autoTriggered:Bool;
-    public var interactionCount:Int;
+	public function new(x:Float, y:Float)
+	{
+		super(x - 10, y - 10);
+		loadGraphic('romfs:/assets/images/commonObjects.t3x', 20, 20);
+		scale.x = 2;
+		scale.y = 2;
+	}
 
-    public function getInteractionHitbox():FlxObject;
-    public function onInteraction():Void;
+	override public function onInteraction()
+	{
+		super.onInteraction();
+		PlayState.instance.startDialogue('room_${PlayState.instance.levelString}_sign${objectValues.dialouge}');
+	}
 }

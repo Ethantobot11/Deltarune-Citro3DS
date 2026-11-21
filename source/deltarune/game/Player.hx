@@ -1,383 +1,204 @@
 package deltarune.game;
 
+import citro.object.CitroAnimate;
+import citro.object.CitroObject;
 import deltarune.Controls;
-import deltarune.assets.GameAssets;
-import deltarune.assets.Paths;
-import flixel.FlxG;
-import flixel.FlxObject;
-import flixel.FlxSprite;
-import flixel.math.FlxPoint;
-import flixel.util.FlxDestroyUtil;
-import flixel.util.FlxDirection;
+import citro.CitroG;
 
-using StringTools;
-
-typedef PlayerConfig =
+class Player extends CitroAnimate
 {
-	var speeds:PlayerSpeeds;
-}
-
-typedef PlayerSpeeds =
-{
-	var ?normal:Float;
-	var ?shortrun:Float;
-	var ?mediumruntime:Float;
-	var ?mediumrun:Float;
-	var ?longruntime:Float;
-	var ?longrun:Float;
-}
-
-typedef PlayerAnims =
-{
-	var sheetType:String;
-	var width:Int;
-	var height:Int;
-	var colliderData:{x:Int, y:Int, even:Bool};
-	var animations:Array<AnimationJSON>;
-}
-
-typedef AnimationJSON =
-{
-	var name:String;
-	var prefix:String;
-	var indicies:Array<Int>;
-	var postfix:String;
-	var framerate:Null<Int>;
-	var looped:Bool;
-	var flipX:Bool;
-	var flipY:Bool;
-}
-
-class Player extends Actor
-{
-	public var baseSpeed:Float = 180; // turns out, the dark world and light world have different movement speeds? but by like, a difference of 1 pixel per frame?
-	public var speeds:PlayerSpeeds = {
-		normal: 120,
-		shortrun: 180,
-		mediumruntime: 0.3,
-		mediumrun: 240,
-		longruntime: 2.0,
-		longrun: 270
-	};
+	public var baseSpeed:Float = 180;
 	public var runningTime:Float = 0;
+
 	public var collider:LinkedCollider;
 	public var colliderOffset:Array<Int> = [12, 42];
 	public var colliderSize:Array<Int> = [18, 36];
-	public var interactionCollider:FlxObject;
+	public var interactionCollider:CitroObject;
+
 	public var controlArray:Array<String> = [];
-
-	public var lastAnimation:String = '_'; // random string
-	public var hasLeftRightAnims:Bool = false;
-
+	public var lastAnimation:String = '_';
 	public var warped:Bool = false;
 	public var running:Bool = false;
 
-	public var JSON:PlayerAnims;
+	public static inline var UP:Int = 0;
+	public static inline var DOWN:Int = 1;
+	public static inline var LEFT:Int = 2;
+	public static inline var RIGHT:Int = 3;
 
-	private var intColOffs:Array<Int> = [8, 16];
+	public var facing:Int = DOWN;
 
-	var lastMoveDirection:Null<FlxDirection> = null;
-
-	public function new(x:Int, y:Int, character:String = 'KrisDarkworld')
+	public function new(x:Float, y:Float, character:String = 'KrisDarkworld')
 	{
-		super(x, y);
-
-		setFacingFlip(LEFT, false, false);
-		setFacingFlip(UP, false, false);
-		setFacingFlip(DOWN, false, false);
-		setFacingFlip(RIGHT, true, false);
-
-		loadAnimations(character);
+		super();
+		this.x = x;
+		this.y = y;
+		var ceaPath = 'romfs:/assets/images/characters/$character/spritesheet.cea';
+		loadCEA(ceaPath, "down");
 
 		collider = new LinkedCollider(x + colliderOffset[0], y + colliderOffset[1], colliderSize[0], colliderSize[1]);
+		interactionCollider = new CitroObject();
+		interactionCollider.width = 32;
+		interactionCollider.height = 52;
 
-		interactionCollider = new FlxObject(collider.x - intColOffs[0], collider.y - intColOffs[1], 32, 52);
+		collider.linkedObjects.set(this, {x: colliderOffset[0], y: colliderOffset[1]});
+		collider.linkedObjects.set(interactionCollider, {x: 8, y: 16});
 
-		collider.linkedObjects.set(this, FlxPoint.get(colliderOffset[0], colliderOffset[1]));
-		collider.linkedObjects.set(interactionCollider, FlxPoint.get(intColOffs[0], intColOffs[1]));
-
-		#if FLX_DEBUG
-		FlxG.console.registerFunction('playerspeed', function(newSpeed:Int = 160)
-		{
-			baseSpeed = newSpeed;
-		});
-		FlxG.console.registerFunction('setcharacter', function(char:String = "KrisDarkworld")
-		{
-			loadAnimations(char);
-		});
-		#end
-	}
-
-	function loadAnimations(folder:String)
-	{
-		JSON = cast Paths.getJSON('$folder/animations', 'characters');
-
-		if (JSON == null && folder != 'KrisDarkworld')
-		{
-			loadAnimations('KrisDarkworld');
-			return;
-		}
-
-		colliderOffset[0] = JSON.colliderData.x * 2;
-		colliderOffset[1] = JSON.colliderData.y * 2;
-
-		if (JSON.colliderData.even)
-		{
-			colliderSize[0] = 16;
-		}
-		else
-		{
-			colliderSize[0] = 18;
-		}
-
-		switch (JSON.sheetType.toLowerCase())
-		{
-			case 'grid' | 'spritesheet' | 'squares' | 'rectangles':
-				loadGraphic(GameAssets.bitmap(Paths.getCharacterImage(folder)), true, JSON.width, JSON.height);
-			default:
-				loadGraphic(GameAssets.bitmap(Paths.getCharacterImage(folder)), true, JSON.width, JSON.height);
-		}
-
-		for (anim in JSON.animations)
-		{
-			switch (JSON.sheetType.toLowerCase())
-			{
-				case 'grid' | 'spritesheet' | 'squares' | 'rectangles':
-					animation.add(anim.name, anim.indicies, anim.framerate != null ? anim.framerate : 8, anim.looped);
-				default:
-					animation.add(anim.name, anim.indicies, anim.framerate != null ? anim.framerate : 8, anim.looped);
-			}
-
-			// animation stuff
-			if (anim.name == 'left' || anim.name == 'right')
-			{
-				setFacingFlip(RIGHT, false, false);
-				hasLeftRightAnims = true;
-			}
-			else if (anim.name == 'side')
-			{
-				setFacingFlip(RIGHT, true, false);
-				hasLeftRightAnims = false;
-			}
-		}
-
-		playAnimation("up");
+		reverseposition();
 	}
 
 	public function playAnimation(?anim:String)
 	{
 		if (anim == null)
-		{
 			anim = lastAnimation;
-		}
-		if (animation.curAnim == null || animation.curAnim.name != anim || animation.curAnim.finished)
+
+		if (curAnim != anim || finished)
 		{
-			animation.play(anim);
+			play(anim);
 		}
 		lastAnimation = anim;
 	}
 
-	override function update(elapsed:Float)
-	{
-		if (controlArray.length <= 0)
-			updateMovement(elapsed);
-		super.update(elapsed);
-	}
-
-	function position()
-	{
-		x = collider.x - colliderOffset[0];
-		y = collider.y - colliderOffset[1];
-		interactionCollider.x = collider.x - intColOffs[0];
-		interactionCollider.y = collider.y - intColOffs[1];
-	}
-
 	public function reverseposition()
 	{
-		collider.x = x + colliderOffset[0];
-		collider.y = y + colliderOffset[1];
-		interactionCollider.x = collider.x - intColOffs[0];
-		interactionCollider.y = collider.y - intColOffs[1];
+		collider.x = this.x + colliderOffset[0];
+		collider.y = this.y + colliderOffset[1];
+		interactionCollider.x = collider.x - 8;
+		interactionCollider.y = collider.y - 16;
 	}
 
-	function updateMovement(elapsed:Float)
+	override public function update():Bool
 	{
-		var keys:Array<Bool> = [
-			Controls.left.pressed,
-			Controls.down.pressed,
-			Controls.up.pressed,
-			Controls.right.pressed,
-		];
+		if (controlArray.length <= 0)
+		{
+			updateMovement();
+		}
+		return super.update();
+	}
 
+	function updateMovement()
+	{
+		var up = Controls.up.pressed;
+		var down = Controls.down.pressed;
+		var left = Controls.left.pressed;
+		var right = Controls.right.pressed;
 		running = Controls.secondary.pressed;
 
-		if (keys[1] && keys[2])
-			keys[1] = keys[2] = false;
-		if (keys[0] && keys[3])
-			keys[0] = keys[3] = false;
-
-		if (keys.contains(true))
+		if (up && down)
 		{
-			var diagonal = (keys[0] || keys[3]) && (keys[1] || keys[2]);
+			up = false;
+			down = false;
+		}
+		if (left && right)
+		{
+			left = false;
+			right = false;
+		}
 
-			var angle:Float = 0;
-			var speed:Float = speeds.normal;
-			if (running)
-			{
-				if (runningTime >= speeds.longruntime)
-				{
-					speed = speeds.longrun;
-				}
-				else if (runningTime >= speeds.mediumruntime)
-				{
-					speed = speeds.mediumrun;
-				}
-				else
-				{
-					speed = speeds.shortrun;
-				}
-				runningTime += elapsed;
-			}
-			else
-			{
-				runningTime = 0;
-			}
+		if (up || down || left || right)
+		{
+			var speed = running ? baseSpeed * 1.5 : baseSpeed;
+			runningTime += CitroG.deltaTime / 1000.0;
 
-			if (keys[2])
+			var vx:Float = 0, vy:Float = 0;
+			if (up)
 			{
-				angle = -90;
-				if (keys[0])
-					angle -= 45;
-				else if (keys[3])
-					angle += 45;
+				vy = -speed;
 				facing = UP;
-				if (!diagonal)
-					lastMoveDirection = UP;
 			}
-			else if (keys[1])
+			if (down)
 			{
-				angle = 90;
-				if (keys[0])
-					angle += 45;
-				else if (keys[3])
-					angle -= 45;
+				vy = speed;
 				facing = DOWN;
-				if (!diagonal)
-					lastMoveDirection = DOWN;
 			}
-			else if (keys[0])
+			if (left)
 			{
-				angle = 180;
+				vx = -speed;
 				facing = LEFT;
-				if (!diagonal)
-					lastMoveDirection = LEFT;
 			}
-			else
+			if (right)
 			{
+				vx = speed;
 				facing = RIGHT;
-				if (!diagonal)
-					lastMoveDirection = RIGHT;
 			}
 
-			collider.drag.x = collider.drag.y = 0;
-			collider.velocity.set((angle % 90) == 0 ? speed : speed * 1.15, 0);
-			collider.velocity.pivotDegrees(FlxPoint.weak(0, 0), angle);
-
-			switch (lastMoveDirection)
+			if (vx != 0 && vy != 0)
 			{
-				case LEFT:
-					if (animation.exists("walk-left"))
-						playAnimation("walk-left");
-					else
-						playAnimation("walk-side");
-				case RIGHT:
-					if (animation.exists("walk-right"))
-						playAnimation("walk-right");
-					else
-						playAnimation("walk-side");
-				case UP:
-					playAnimation("walk-up");
-				case DOWN:
-					playAnimation("walk-down");
-				case _:
-					trace("bitch");
+				vx *= 0.707;
+				vy *= 0.707;
 			}
 
-			if (running
-				&& (animation.curAnim != null && animation.curAnim.name.startsWith("walk"))) // support automatic and custom run animations
-				animation.update(elapsed); // double speed
+			collider.x += vx * (CitroG.deltaTime / 1000.0);
+			collider.y += vy * (CitroG.deltaTime / 1000.0);
+
+			var dirStr = switch (facing)
+			{
+				case LEFT: "left";
+				case RIGHT: "right";
+				case UP: "up";
+				default: "down";
+			}
+
+			framerate = running ? 16 : 8;
+			playAnimation("walk-" + dirStr);
 		}
 		else
 		{
 			runningTime = 0;
-			collider.drag.x = collider.drag.y = 2000;
-			velocity.x = velocity.y = 0;
-			switch (lastMoveDirection)
+			framerate = 8;
+			var dirStr = switch (facing)
 			{
-				case LEFT:
-					if (animation.exists("left"))
-						playAnimation("left");
-					else
-						playAnimation("side");
-				case RIGHT:
-					if (animation.exists("right"))
-						playAnimation("right");
-					else
-						playAnimation("side");
-				case UP:
-					playAnimation("up");
-				case DOWN:
-					playAnimation("down");
-				case _:
+				case LEFT: "left";
+				case RIGHT: "right";
+				case UP: "up";
+				default: "down";
 			}
+			playAnimation(dirStr);
 		}
 
-		FlxG.watch.addQuick('Player X Velocity', collider.velocity.x);
-		FlxG.watch.addQuick('Player Y Velocity', collider.velocity.y);
-		FlxG.watch.addQuick('Player Is Running?', running);
+		this.x = collider.x - colliderOffset[0];
+		this.y = collider.y - colliderOffset[1];
+		interactionCollider.x = collider.x - 8;
+		interactionCollider.y = collider.y - 16;
 	}
 
-	override function destroy()
+	override public function destroy()
 	{
-		collider = FlxDestroyUtil.destroy(collider);
-		interactionCollider = FlxDestroyUtil.destroy(interactionCollider);
+		if (collider != null)
+			collider.destroy();
+		if (interactionCollider != null)
+			interactionCollider.destroy();
+		super.destroy();
 	}
 }
 
-class LinkedCollider extends FlxObject
+class LinkedCollider extends CitroObject
 {
-	public var linkedObjects:Map<FlxObject, FlxPoint> = [];
+	public var linkedObjects:Map<CitroObject, {x:Float, y:Float}> = new Map();
 
 	public function new(x:Float = 0, y:Float = 0, width:Float = 0, height:Float = 0)
 	{
-		super(x, y, width, height);
+		super();
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
 	}
 
-	override function set_x(value:Float):Float
+	override public function set_x(value:Float):Float
 	{
-		for (object => objectOffset in linkedObjects)
+		for (obj => offset in linkedObjects)
 		{
-			object.x = value - objectOffset.x;
+			obj.x = value - offset.x;
 		}
 		return x = value;
 	}
 
-	override function set_y(value:Float):Float
+	override public function set_y(value:Float):Float
 	{
-		for (object => objectOffset in linkedObjects)
+		for (obj => offset in linkedObjects)
 		{
-			object.y = value - objectOffset.y;
+			obj.y = value - offset.y;
 		}
 		return y = value;
-	}
-
-	override function destroy()
-	{
-		super.destroy();
-		for (obj => point in linkedObjects)
-		{
-			point.put();
-		}
-		linkedObjects.clear();
 	}
 }

@@ -3,17 +3,9 @@ package deltarune.game;
 import deltarune.assets.GameAssets;
 import deltarune.assets.Paths;
 import deltarune.game.states.PlayState;
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.addons.text.FlxTypeText;
-import flixel.group.FlxSpriteContainer;
-import flixel.math.FlxPoint;
-import flixel.sound.FlxSound;
-import flixel.text.FlxText;
-import flixel.util.FlxColor;
-import flixel.util.typeLimit.OneOfTwo;
-import openfl.Assets;
-import openfl.display.BitmapData;
+import citro.object.CitroSprite;
+import citro.object.CitroGroup;
+import citro.object.CitroTypeText;
 
 typedef DialogueStructure =
 {
@@ -33,212 +25,55 @@ typedef DialogueLine =
 
 typedef DialogueFile = OneOfTwo<DialogueStructure, String>;
 
-class LegacyDialogueBox extends FlxSpriteContainer
+class LegacyDialogueBox extends CitroGroup
 {
 	public var activated(default, set):Bool;
+	public var finishedCallback:Void->Void;
+	public var dialogueProgressedCallback:Int->Void;
 
-	public var finishedCallback:() -> Void;
-	public var dialogueProgressedCallback:(Int) -> Void;
+	private var background:CitroSprite;
+	private var portrait:CitroSprite;
+	private var typeText:CitroTypeText;
 
-	// sprite order
-	var background:FlxSprite;
-	var portrait:FlxSprite;
-	var astrix:FlxText;
-	var typeText:FlxTypeText;
+	private var niceDialogue:Dynamic;
+	private var dialogueIndex:Int;
+	private var linefinished:Bool;
 
-	var shadowPow:Int = 1;
-
-	var niceDialogue:DialogueStructure;
-
-	var dialogueIndex:Int;
-
-	var linefinished:Bool;
-
-	var disableControls:Bool = false;
-
-	function set_activated(value:Bool)
-	{
-		if (typeText != null)
-		{
-			for (sound in typeText.sounds)
-				sound.volume = value ? 1 : 0;
-		}
-		activated = value;
-		return value;
-	}
-
-	var defaultfile:DialogueStructure = {
-		style: "darkworld",
-		dialogue: [
-			{
-				portrait: "none",
-				text: "Dialogue failed to load, please check the path or dialogue file for issues",
-				speed: 1,
-				pausespeed: 1,
-				autocontinue: false,
-				skippable: true
-			},
-		]
-	};
-
-	public function new(X:Float = 0, Y:Float = 0, dialogue:DialogueFile)
+	public function new(x:Float, y:Float, dialogueFile:String)
 	{
 		super();
-		constructor(dialogue);
-	}
+		this.x = x;
+		this.y = y;
 
-	public function reconstruct(dialogue:DialogueFile)
-	{
-		remove(background);
-		background.destroy();
-		remove(portrait);
-		portrait.destroy();
-		remove(astrix);
-		astrix.destroy();
-		remove(typeText);
-		typeText.destroy();
-		constructor(dialogue);
-	}
-
-	function constructor(dialogue:DialogueFile)
-	{
-		if ((dialogue is String))
-		{
-			var jsonstr:String = dialogue;
-			if (GameAssets.exists(dialogue))
-				jsonstr = GameAssets.text(dialogue);
-			try
-			{
-				niceDialogue = haxe.Json.parse(jsonstr);
-			}
-			catch (e:Any)
-			{
-				FlxG.log.warn("Failed to parse/load Dialogue");
-				niceDialogue = defaultfile;
-			}
-		}
-		else
-			niceDialogue = dialogue;
-
-		activated = false;
-		dialogueIndex = 0;
-		linefinished = false;
-
-		background = new FlxSprite(0, 0, GameAssets.bitmap('images/${niceDialogue.style}Box.png'));
-		if (niceDialogue.style == "darkworld")
-		{
-			background.offset.x = 8;
-			background.offset.y = 8;
-		}
+		background = new CitroSprite(0, 0);
+		background.loadGraphic('romfs:/assets/images/darkworldBox.t3x');
 		background.scale.x = 2;
 		background.scale.y = 2;
-		background.antialiasing = false;
-		background.updateHitbox();
-
 		add(background);
 
-		portrait = new FlxSprite(0, 0);
+		portrait = new CitroSprite(0, 0);
 		portrait.scale.x = 2;
 		portrait.scale.y = 2;
-		portrait.antialiasing = false;
-		portrait.updateHitbox();
-
 		add(portrait);
 
-		astrix = new FlxText(24, 26, 48, "*");
-		astrix.setFormat('', 32, FlxColor.WHITE, LEFT);
-		@:privateAccess
-		astrix._defaultFormat.font = GameAssets.font(Paths.getFont('8bitoperator_jve')).fontName;
-		astrix.antialiasing = false;
-		astrix.setBorderStyle(SHADOW_XY(shadowPow, shadowPow), 0xFF171769, 1, 1);
-
-		add(astrix);
-
-		typeText = new FlxTypeText(52, 24, 496, getCurrentLine().text); // x, y, width
-		typeText.setFormat('', 32, FlxColor.WHITE, LEFT);
-		@:privateAccess
-		typeText._defaultFormat.font = GameAssets.font(Paths.getFont('8bitoperator_jve')).fontName;
-		typeText.antialiasing = false;
-		typeText.start(getCurrentLine().speed / 30, true, false, [], dialogueLineFinished);
-		typeText.setBorderStyle(SHADOW_XY(shadowPow, shadowPow), 0xFF171769, 1, 1);
-
+		typeText = new CitroTypeText(52, 24, 496, "");
+		typeText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 		add(typeText);
 
+		niceDialogue = haxe.Json.parse(sys.io.File.getContent('romfs:/$dialogueFile'));
 		dialogueIndex = -1;
 		continueDialogue();
 	}
 
-	override public function update(elapsed:Float)
+	function set_activated(value:Bool):Bool
 	{
-		super.update(elapsed);
-
-		if (FlxG.keys.justPressed.R && Game.developerMode && !disableControls)
-		{
-			activated = true;
-			dialogueIndex = -1;
-			continueDialogue();
-		}
-
-		if (PlayState.instance != null)
-		{
-			if (!activated)
-			{
-				if (PlayState.instance.player.controlArray.contains('dialogue'))
-					PlayState.instance.player.controlArray.remove('dialogue');
-				return;
-			}
-			else if (!PlayState.instance.player.controlArray.contains('dialogue'))
-			{
-				PlayState.instance.player.controlArray.push('dialogue');
-			}
-		}
-
-		var justContinued:Bool = false;
-
-		if ((Controls.primary.justPressed || Controls.tetritary.pressed) && linefinished && !disableControls)
-		{
-			continueDialogue();
-			justContinued = true;
-		}
-
-		if (((Controls.primary.justPressed && !justContinued) || Controls.secondary.pressed || Controls.tetritary.pressed)
-			&& !disableControls
-			&& !linefinished
-			&& getCurrentLine().skippable)
-		{
-			typeText.skip();
-		}
-	}
-
-	function position(start:Float)
-	{
-		return start + getCurrentLine().portrait == "none" ? 0 : 100;
-	}
-
-	function positionSprite(sprite:FlxSprite, xv:Float = null, yv:Float = null)
-	{
-		if (xv != null)
-			sprite.x = xv + x - offset.x;
-		if (yv != null)
-			sprite.y = yv + y - offset.y;
-	}
-
-	function getSpritePosition(sprite:FlxSprite)
-	{
-		return new FlxPoint(sprite.x, sprite.y).subtract(x - offset.x, y - offset.y);
-	}
-
-	public function dialogueLineFinished()
-	{
-		linefinished = true;
-		if (getCurrentLine().autocontinue && !disableControls)
-			continueDialogue();
+		activated = value;
+		return value;
 	}
 
 	public function continueDialogue(?reset:Bool = false)
 	{
 		linefinished = false;
-
 		if (dialogueIndex + 1 >= niceDialogue.dialogue.length && !reset)
 		{
 			activated = false;
@@ -252,58 +87,34 @@ class LegacyDialogueBox extends FlxSpriteContainer
 			if (dialogueProgressedCallback != null)
 				dialogueProgressedCallback(dialogueIndex);
 
-			updatePortrait();
-
-			typeText.resetText(getCurrentLine().text);
-			typeText.start(getCurrentLine().speed / 30, true, false, [], dialogueLineFinished);
+			var line = niceDialogue.dialogue[dialogueIndex];
+			typeText.resetText(line.text);
+			typeText.start(line.speed / 30, true, false, dialogueLineFinished);
 		}
 	}
 
-	function updatePortrait()
+	function dialogueLineFinished()
 	{
-		if ((getCurrentLine().portrait == "none" || getCurrentLine().portrait == "")
-			&& !GameAssets.exists(Paths.getPortrait(getCurrentLine().portrait)))
+		linefinished = true;
+		if (niceDialogue.dialogue[dialogueIndex].autocontinue)
 		{
-			portrait.visible = false;
-			astrix.offset.x = 0;
-			typeText.offset.x = 0;
-			typeText.fieldWidth = 496;
+			continueDialogue();
 		}
-		else
-		{
-			portrait.visible = true;
-			portrait.loadGraphic(GameAssets.bitmap(Paths.getPortrait(getCurrentLine().portrait)));
-			portrait.updateHitbox();
-			positionSprite(portrait, ((100 - portrait.width) / 2) + 24, (160 - portrait.height) / 2);
-			astrix.offset.x = -(portrait.width + getSpritePosition(portrait).x);
-			typeText.offset.x = -(portrait.width + getSpritePosition(portrait).x);
-			typeText.fieldWidth = 400;
-		}
-
-		if (GameAssets.exists(Paths.getTextSound(getCurrentLine().portrait)))
-		{
-			typeText.sounds = [
-				new FlxSound().loadEmbedded(GameAssets.sound(Paths.getTextSound(getCurrentLine().portrait)))
-			];
-		}
-		else
-		{
-			typeText.sounds = [new FlxSound().loadEmbedded(GameAssets.sound(Paths.getTextSound()))];
-		}
-
-		activated = activated;
 	}
 
-	override public function draw()
+	override public function update():Bool
 	{
 		if (activated)
 		{
-			super.draw();
+			if (Controls.primary.justPressed && linefinished)
+			{
+				continueDialogue();
+			}
+			if (Controls.primary.justPressed && !linefinished)
+			{
+				typeText.skip();
+			}
 		}
-	}
-
-	public inline function getCurrentLine()
-	{
-		return niceDialogue.dialogue[dialogueIndex];
+		return super.update();
 	}
 }

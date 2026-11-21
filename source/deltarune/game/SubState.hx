@@ -1,5 +1,5 @@
 package deltarune.game;
 
-import flixel.FlxSubState;
+import citro.state.CitroSubState;
 
-typedef SubState = FlxSubState;
+typedef SubState = citro.state.CitroSubState;

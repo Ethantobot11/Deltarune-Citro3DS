@@ -1,89 +1,38 @@
 package deltarune;
 
-import deltarune.assets.GameAssets;
-import flixel.math.FlxMath;
-import openfl.system.System;
-import deltarune.game.states.substates.Options;
-import deltarune.assets.Paths;
+import citro.CitroG;
+import citro.object.CitroText;
+import citro.util.CitroStringUtil;
 
-import openfl.text.TextFormat;
-import openfl.display.FPS;
-
-/* 
- * Styled version of `openfl.display.FPS`
- */
-class GameFps extends FPS
+class GameFps extends CitroText
 {
-    public static var memoryPeak:Int = 0;
+	public static var memoryPeak:Int = 0;
 
-	@:noCompletion private var cachedMem:Int;
+	private var cachedMem:Int = 0;
+	private var times:Array<Float> = [];
+	private var currentTime:Float = 0;
+	private var currentFPS:Int = 0;
+	private var cacheCount:Int = 0;
 
-	var fpsText:String = '';
-	var dcText:String = '';
-	var memText:String = '';
+	public function new()
+	{
+		super(10, 8, "FPS: 0");
+		loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+	}
 
-    public function new()
-    {
-        super(10, 8, 0xFFFFFFFF);
-		var format = new TextFormat(GameAssets.font(Paths.getFont('8bitoperator_jve')).fontName, 16, 0xFFFFFFFF);
-		setTextFormat(format);
-    }
-
-    public override function __enterFrame(delta:Float)
+	public function updateFPS(delta:Float)
 	{
 		currentTime += delta;
 		times.push(currentTime);
-
-		while (times[0] < currentTime - 1000)
+		while (times.length > 0 && times[0] < currentTime - 1000)
 		{
 			times.shift();
 		}
+		currentFPS = Math.round((times.length + cacheCount) / 2);
+		var memoryUsed:Int = 0;
 
-		var currentCount = times.length;
-		currentFPS = Math.round((currentCount + cacheCount) / 2);
-
-        var memoryUsed = System.totalMemory;
-        if (memoryUsed > memoryPeak) {memoryPeak = memoryUsed;}
-
-		if (Options.generalData.show_fps)
-		{
-			if (currentCount != cacheCount /*&& visible*/)
-			{
-				fpsText = "FPS: " + currentFPS;
-
-				#if (gl_stats && !disable_cffi && (!html5 || !canvas))
-				dcText = "\ntotalDC: " + Context3DStats.totalDrawCalls();
-				dcText += "\nstageDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE);
-				dcText += "\nstage3DDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE3D);
-				#end
-			}
-		}
-
-        if (Options.generalData.show_memory)
-        {
-			if (memoryUsed != cachedMem /*&& visible*/)
-			{
-                memText = '\nMemory: ${formatBytes(memoryUsed)}';
-				memText += '\nMem Peak: ${formatBytes(memoryPeak)}';
-            }
-		}
-
-        text = fpsText + dcText + memText;
-
-        cachedMem = memoryUsed;
-		cacheCount = currentCount;
-    }
-
-    public static function formatBytes(bytes:Int):String
-    {
-        if (bytes > 1000000000) { //GB
-			return '${FlxMath.roundDecimal(bytes / 1000000000, 2)} GB';
-        } else if (bytes > 1000000) { //MB
-            return '${FlxMath.roundDecimal(bytes / 1000000, 2)} MB';
-        } else if (bytes > 1000) { //KB
-			return '${FlxMath.roundDecimal(bytes / 1000, 2)} KB';
-        } else { //B
-			return '${bytes} B';
-        }
-    }
+		text = 'FPS: $currentFPS\nMem: ${CitroStringUtil.formatBytes(memoryUsed)}\nPeak: ${CitroStringUtil.formatBytes(memoryPeak)}';
+		cachedMem = memoryUsed;
+		cacheCount = times.length;
+	}
 }
