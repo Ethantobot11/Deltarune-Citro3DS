@@ -36,7 +36,7 @@ class LegacyDialogueBox extends CitroGroup
 	private var typeText:CitroTypeText;
 
 	private var niceDialogue:Dynamic;
-	private var dialogueIndex:Int;
+	public var dialogueIndex:Int;
 	private var linefinished:Bool;
 
 	public function new(x:Float, y:Float, dialogueFile:String)

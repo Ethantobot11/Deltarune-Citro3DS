@@ -1,5 +1,5 @@
 package deltarune.game.states.substates;
 
-class LightWorldBattle {
-    
-}
+import citro.state.CitroState;
+
+class LightWorldBattle extends CitroState {}

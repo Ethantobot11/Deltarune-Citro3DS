@@ -1,35 +1,31 @@
 package deltarune.game.states.substates;
 
-import flixel.text.FlxText;
+import citro.state.CitroSubState;
+import citro.object.CitroText;
 
-import deltarune.game.SubState;
-import deltarune.game.states.substates.Options.NoSuccess;
-
-class SavingState extends SubState
+class SavingState extends CitroSubState
 {
-    var _temp_save_text:FlxText;
-    var save_id:Int;
+	var _temp_save_text:CitroText;
+	var save_id:Int;
 
-    override public function create()
-    {
-		_temp_save_text = new FlxText(16, 16, 0, 'Selected < $save_id >, Press [ENTER / Z] to save');
-        add(_temp_save_text);
+	override public function create()
+	{
+		super.create();
+		_temp_save_text = new CitroText(16, 16, 'Selected < $save_id >, Press [A] to save');
+		_temp_save_text.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+		add(_temp_save_text);
+	}
 
-		bgColor = 0x80000000;
+	override public function update(delta:Int)
+	{
+		super.update(delta);
+	}
 
-        super.create();
-    }
-
-    override public function update(elapsed:Float)
-    {
-        super.update(elapsed);
-    }
-
-    public function createTestSaveString(id:Int)
-    {
+	public function createTestSaveString(id:Int):String
+	{
 		var save_name = Options.grabSaveData('name', null, id);
 		var raw_time = Options.grabSaveData('play_time', null, id);
-        var save_text;
+		var save_text = "";
 
 		if (save_name == NoSuccess.NoSaveData || save_name == null)
 		{
@@ -37,22 +33,22 @@ class SavingState extends SubState
 		}
 		else
 		{
-			save_text = Options.defaultData.name;
+			save_text = Std.string(save_name);
 		}
 
-        save_text += " | Time : ";
+		save_text += " | Time : ";
 
-        if (raw_time == NoSuccess.NoSaveData || raw_time == null)
-        {
+		if (raw_time == NoSuccess.NoSaveData || raw_time == null)
+		{
 			save_text += "N/A";
-        }
-        else
-        {
-			var save_play_time = Date.fromTime(cast raw_time);
-			// 3600 000 is an hour when using Date.getTime
-			save_text += Math.floor(save_play_time.getTime() / 3600000) + DateTools.format(save_play_time, ":%M:%S");
-        }
-
-        return save_text;
-    }
+		}
+		else
+		{
+			var seconds = Std.int(Std.parseFloat(Std.string(raw_time)));
+			var mins = Std.int(seconds / 60);
+			var secs = seconds % 60;
+			save_text += mins + ":" + (secs < 10 ? "0" + secs : Std.string(secs));
+		}
+		return save_text;
+	}
 }

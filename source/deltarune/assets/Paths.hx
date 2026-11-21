@@ -12,35 +12,36 @@ class Paths
 {
 	public static var currentMusic:String = null;
 
-	public static inline function getCharacterImage(char:String)
-		return 'characters/$char/spritesheet.png';
+	public static inline function getCharacterImage(char:String):String
+		return 'romfs:/assets/images/characters/$char/spritesheet.t3x';
 
-	public static inline function getFont(font:String)
-		return 'fonts/$font.ttf';
+	public static inline function getFont(font:String):String
+		return 'romfs:/assets/fonts/$font.bcfnt';
 
-	public static inline function getOTFFont(font:String)
-		return 'fonts/$font.otf';
+	public static inline function getImage(image:String, format:String = 't3x'):String
+		return 'romfs:/assets/images/$image.$format';
 
-	public static inline function getImage(image:String, format:String = 'png')
-		return 'images/$image.$format';
+	public static inline function getDialogue(file:String):String
+		return 'romfs:/assets/data/dialogue/$file.json';
 
-	public static inline function getDialogue(file:String)
-		return 'data/dialogue/$file.json';
-
-	public static inline function getMusic(file:String)
+	public static inline function getMusic(file:String):String
 	{
 		currentMusic = file;
-		return 'music/$file';
+		return 'romfs:/assets/music/$file.cwav';
+	}
+
+	public static inline function getSound(file:String):String
+			return 'romfs:/assets/sounds/$file.cwav';
 	}
 
 	//why does this exist?
 	public static inline function getPortrait(character:String)
-		return 'images/dialogue/$character.png';
+		return 'romfs:/assets/images/dialogue/$character.t3x';
 
 	public static function getBitmapSys(image:String)
 	{
-		if (GameAssets.exists('/images/$image.png'))
-			return GameAssets.bitmap('/images/' + image + '.png');
+		if (GameAssets.exists('/images/$image.t3x'))
+			return GameAssets.bitmap('/images/' + image + '.t3x');
 		return null;
 	}
 
@@ -82,9 +83,9 @@ class Paths
 	//why does this exist?
 	public static function getTextSound(character:String = 'default')
 	{
-		var fixedPath = 'sounds/text_' + character.split('-')[0] + '.wav';
+		var fixedPath = 'sounds/text_' + character.split('-')[0] + '.cwav';
 		if (!GameAssets.exists(fixedPath))
-			fixedPath = 'sounds/text_default.wav';
+			fixedPath = 'sounds/text_default.cwav';
 		return fixedPath;
 	}
 }

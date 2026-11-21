@@ -1,9 +1,6 @@
 package deltarune.assets;
 
 import haxe.io.Bytes;
-import openfl.display.BitmapData;
-import openfl.media.Sound;
-import openfl.text.Font;
 #if sys
 import sys.FileSystem;
 import sys.io.File;
@@ -20,7 +17,9 @@ class SysAssetSystem implements IAssetSystem
 		if (root == null)
 		{
 			#if sys
-			#if android
+			#if (CITRO_ENGINE && IS_CIAbytes)
+			this.root = 'romfs:/assets';
+			#elseif android
 			this.root = Sys.programPath();
 			#else
 			this.root = Sys.getCwd() + '/assets';
@@ -38,31 +37,29 @@ class SysAssetSystem implements IAssetSystem
 	public function list(directory:String, subdirectory:Bool = false):Array<String>
 	{
 		#if sys
-		var dirs:Array<String> = FileSystem.readDirectory('$root/$directory');
-		var i:Int = 0;
-		while (dirs.length > i)
+		var dirs:Array<String> = [];
+		try
 		{
-			if (FileSystem.isDirectory(dirs[i]))
+			dirs = FileSystem.readDirectory('$root/$directory');
+			var i:Int = 0;
+			while (dirs.length > i)
 			{
-				if (subdirectory)
+				if (FileSystem.isDirectory('$root/$directory/${dirs[i]}'))
 				{
-					dirs = dirs.concat(FileSystem.readDirectory('$root/$directory/${dirs[i]}'));
+					if (subdirectory)
+						dirs = dirs.concat(FileSystem.readDirectory('$root/$directory/${dirs[i]}'));
+					dirs.splice(i, 1);
 				}
-				dirs.splice(i, 1);
-			}
-			else
-			{
-				i++;
+				else
+				{
+					i++;
+				}
 			}
 		}
-
+		catch (e:Dynamic) {}
 		return dirs;
 		#else
-		#if debug
-		throw new NotImplementedException();
-		#else
-		return null;
-		#end
+		return [];
 		#end
 	}
 
@@ -89,11 +86,7 @@ class SysAssetSystem implements IAssetSystem
 		#if sys
 		return File.getContent('${root}/${file}');
 		#else
-		#if debug
-		throw new NotImplementedException();
-		#else
 		return null;
-		#end
 		#end
 	}
 
@@ -102,53 +95,22 @@ class SysAssetSystem implements IAssetSystem
 		#if sys
 		return File.getBytes('${root}/${file}');
 		#else
-		#if debug
-		throw new NotImplementedException();
-		#else
 		return null;
-		#end
 		#end
 	}
 
-	public function font(file:String):Font
+	public function font(file:String):Dynamic
 	{
-		// some random file loading functions inside the respective classes (not openfl.Assets) dont use the openfl assets system? but not always?
-		#if sys
-		return Font.fromFile('${root}/${file}');
-		#else
-		#if debug
-		throw new NotImplementedException();
-		#else
-		return null;
-		#end
-		#end
+		return file;
 	}
 
-	public function bitmap(image:String):BitmapData
+	public function bitmap(image:String):Dynamic
 	{
-		// yet again, weird
-		#if sys
-		return BitmapData.fromFile('${root}/${image}');
-		#else
-		#if debug
-		throw new NotImplementedException();
-		#else
-		return null;
-		#end
-		#end
+		return image;
 	}
 
-	public function sound(sound:String):Sound
+	public function sound(sound:String):Dynamic
 	{
-		// ...
-		#if sys
-		return Sound.fromFile('${root}/${sound}');
-		#else
-		#if debug
-		throw new NotImplementedException();
-		#else
-		return null;
-		#end
-		#end
+		return sound;
 	}
 }

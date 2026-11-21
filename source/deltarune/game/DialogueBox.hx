@@ -1,15 +1,11 @@
 package deltarune.game;
 
+import citro.object.CitroGroup;
 import deltarune.data.BasicJSONTypes;
-import flixel.group.FlxSpriteContainer;
 
-/**
- * Dialogue display and controller.
- * For more complex, unconventional typed text, you may want to use `Writer`
- */
-class DialogueBox extends FlxSpriteContainer
+class DialogueBox extends CitroGroup
 {
-	var writer:Writer; // the "text" from DialogueStyle
+	var writer:Dynamic;
 	var currentStyle:DialogueStyle;
 
 	public function new()
@@ -17,16 +13,15 @@ class DialogueBox extends FlxSpriteContainer
 		super();
 	}
 
-	override public function update(elapsed:Float)
+	override public function update():Bool
 	{
-		super.update(elapsed);
+		return super.update();
 	}
 
 	public function setStyle(style:DialogueStyle) {}
 }
 
-// A small selection of UT/DR dialogue portraits use multiple sprites, if you didnt know.
-class Portrait extends FlxSpriteContainer {}
+class Portrait extends CitroGroup {}
 
 typedef DialogueStyle =
 {
@@ -58,7 +53,7 @@ typedef DSSAnimationData =
 typedef DialogueStylePortraitData =
 {
 	> DialogueStyleMember,
-	positionAlignment:String, // LEFT,RIGHT,TOP,BOTTOM,CENTER or a mix of two of these with a hyphen
+	positionAlignment:String,
 	?isDefault:Bool,
 	?textPositionOffset:JSON2DPoint,
 	?textWidthOffset:Float
@@ -70,5 +65,5 @@ typedef DialogueStyleTextData =
 	defaultFont:String,
 	?monoSpacing:Float,
 	lineSpacing:Float,
-	tabSpacing:Float,
+	tabSpacing:Float
 }

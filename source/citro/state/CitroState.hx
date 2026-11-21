@@ -14,13 +14,9 @@ class CitroState {
     };
 
     public function update(delta:Int) {
-        CrashHandler.protect(function() {
-            for (member in members) {
-                if (member != null && member.exists) {
-                    member.update();
-                }
-            }
-        }, null);
+        for (member in members) {
+            member.update(delta);
+        }
     }
 
     public function destroy() {

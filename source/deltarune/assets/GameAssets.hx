@@ -1,47 +1,15 @@
 package deltarune.assets;
 
-import flixel.graphics.FlxGraphic;
-import flixel.text.FlxBitmapFont;
 import haxe.io.Bytes;
-import openfl.display.BitmapData;
-import openfl.media.Sound;
-import openfl.text.Font;
 
 class GameAssets
 {
 	public static var assetSystems:Array<IAssetSystem> = [];
 
-	public static final supportedAudio:Array<String> = [
-		"mp3",
-		#if !html5 "ogg", #end 
-		#if cpp "opus", #end
-		"wav" ]; // missing .flac support...
+	public static final supportedAudio:Array<String> = ["cwav"];
+	public static final supportedImage:Array<String> = ["t3x"];
 
-	public static final supportedImage:Array<String> = [
-		"png",
-		"bmp"
-	]; // to-do, maybe write haxe decoder for QOI
-
-	//probably remove this and replace with automatic checks in order of audio quality (wav, opus/ogg-opus, ogg-vorbis, mp3)
-	public static inline var MUSIC_EXT:String = #if html5 'mp3' #else 'ogg' #end;
-
-	public static var cachedBitmapFonts:Map<String, FlxBitmapFont> = [];
-
-	public static function graphic(image:String):FlxGraphic
-	{
-		for (assetSystem in assetSystems)
-			if (assetSystem.exists(image))
-				return FlxGraphic.fromBitmapData(assetSystem.bitmap(image), false, '', false);
-		return null;
-	}
-
-	public static function bitmap(image:String):BitmapData
-	{
-		for (assetSystem in assetSystems)
-			if (assetSystem.exists(image))
-				return assetSystem.bitmap(image);
-		return null;
-	}
+	public static inline var MUSIC_EXT:String = "cwav";
 
 	public static function text(file:String):String
 	{
@@ -51,7 +19,7 @@ class GameAssets
 		return null;
 	}
 
-	public static function sound(audio:String):Sound
+	public static function sound(audio:String):Dynamic
 	{
 		for (assetSystem in assetSystems)
 			if (assetSystem.exists(audio))
@@ -59,20 +27,12 @@ class GameAssets
 		return null;
 	}
 
-	public static function music(audio:String):Sound
+	public static function music(audio:String):Dynamic
 	{
-		var path = '$audio.$MUSIC_EXT'; // redo this to support other formats
+		var path = '$audio.$MUSIC_EXT';
 		for (assetSystem in assetSystems)
 			if (assetSystem.exists(path))
 				return assetSystem.sound(path);
-		return null;
-	}
-
-	public static function font(font:String):Font
-	{
-		for (assetSystem in assetSystems)
-			if (assetSystem.exists(font))
-				return assetSystem.font(font);
 		return null;
 	}
 
@@ -84,18 +44,13 @@ class GameAssets
 		return null;
 	}
 
-	public static function exists(file:String):Bool // switch to Null<String> that includes the asset system label
+	public static function exists(file:String):Bool
 	{
 		for (assetSystem in assetSystems)
 			if (assetSystem.exists(file))
 				return true;
 		return false;
 	}
-
-	// public static function musicExists(file:String):Bool
-	// {
-	//	for (assetSystem in assetSystems) {}
-	// }
 
 	public static function directoryExists(folder:String):Bool
 	{
@@ -105,18 +60,9 @@ class GameAssets
 		return false;
 	}
 
-	/**
-	 * [Description]
-	 * List all files in a directory across all connected asset systems, removing duplicates
-	 * 
-	 * DOES NOT PREFIX FILES WITH SEARCH DIRECTORY!
-	 * @param folder 
-	 * @return Array<String>
-	 */
 	public static function list(folder:String, recursive:Bool = false):Array<String>
 	{
 		var files:Array<String> = [];
-
 		for (assetSystem in assetSystems)
 		{
 			var assetSysFiles = assetSystem.list(folder, recursive);
@@ -126,7 +72,6 @@ class GameAssets
 					files.push(file);
 			}
 		}
-
 		return files;
 	}
 }

@@ -2,11 +2,7 @@ package deltarune.tools;
 
 import flixel.system.ui.FlxSoundTray;
 
-class SoundTray extends FlxSoundTray
+class SoundTray
 {
-	override public function new()
-	{
-		super();
-		removeChildren();
-	}
+	public function new() {}
 }

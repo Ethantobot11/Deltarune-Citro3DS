@@ -1,61 +1,54 @@
 package deltarune.game.states;
 
-import deltarune.game.State;
-import flixel.util.FlxSort;
-import haxe.ds.ArraySort;
+import citro.state.CitroState;
+import deltarune.Game;
 #if sys
 import sys.FileSystem;
 #end
 
-class UserSelectState extends State
+class UserSelectState extends CitroState
 {
 	override public function create()
 	{
 		Game.initialize();
-
 		super.create();
 
 		var users:Array<String> = [];
 
-		#if !sys
-		if (Game.globalSave.bind("_userlist", "savedata/global"))
+		#if sys
+		var saveDataDir = 'sdmc:/Deltarune-Citro3DS/savedata/global/';
+		if (FileSystem.exists(saveDataDir))
 		{
-			if (globalSave.data.users == null)
-				globalSave.data.users = [];
-			users.concat(globalSave.data.users);
-		}
-		#else
-		var saveDataDir = Sys.getCwd() + '/savedata/global/';
-		for (saveFile in FileSystem.readDirectory(saveDataDir))
-		{
-			if (FileSystem.isDirectory(saveDataDir + saveFile) || saveFile == "_userlist" || saveFile == "_default")
-				continue;
-			users.push(saveFile);
+			for (saveFile in FileSystem.readDirectory(saveDataDir))
+			{
+				if (FileSystem.isDirectory(saveDataDir + saveFile)
+					|| saveFile == "_userlist"
+					|| saveFile == "_default"
+					|| saveFile == "save.json")
+					continue;
+				users.push(saveFile);
+			}
 		}
 		#end
-		ArraySort.sort(users, sortAlphabetically.bind(FlxSort.ASCENDING));
+
+		users.sort(sortAlphabetically);
 	}
 
-	private static function sortAlphabetically(order:Int = -1, a:String, b:String)
+	private static function sortAlphabetically(a:String, b:String):Int
 	{
 		if (a == b)
 			return 0;
-		var al:String = a.toLowerCase();
-		var bl:String = b.toLowerCase();
-		var av:Int;
-		var bv:Int;
+		var al = a.toLowerCase();
+		var bl = b.toLowerCase();
 		for (index in 0...Std.int(Math.min(a.length, b.length)))
 		{
-			av = al.charCodeAt(index);
-			bv = bl.charCodeAt(index);
+			var av = al.charCodeAt(index);
+			var bv = bl.charCodeAt(index);
 			if (av < bv)
-				return order;
+				return -1;
 			else if (bv < av)
-				return -order;
+				return 1;
 		}
-		if (a.length > b.length)
-			return -order;
-		else
-			return order;
+		return a.length > b.length ? 1 : -1;
 	}
 }

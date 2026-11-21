@@ -1,69 +1,47 @@
 package deltarune.game.states;
 
-import deltarune.assets.GameAssets;
-import deltarune.assets.Paths;
-import deltarune.game.State;
-import deltarune.shaders.PulsatingGhostEffect;
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.ui.FlxButton;
+import citro.state.CitroState;
+import citro.object.CitroSprite;
+import citro.object.CitroButton;
+import citro.CitroG;
 
-class IntroState extends State
+class IntroState extends CitroState
 {
-	var background:FlxSprite;
-	var intro_shader:PulsatingGhostEffect;
-
-	var playButton:FlxButton;
+	var background:CitroSprite;
+	var playButton:CitroButton;
 	var leaving:Bool = false;
+	var pulseTime:Float = 0;
 
 	override public function create()
 	{
 		super.create();
 
-		FlxG.sound.playMusic(GameAssets.music(Paths.getMusic('ANOTHER HIM')), 0.8, true);
-
-		background = new FlxSprite().loadGraphic(GameAssets.bitmap('images/intro_cutscene/intro_background.png'));
-
+		background = new CitroSprite(0, 0);
+		background.loadGraphic('romfs:/assets/images/intro_cutscene/intro_background.t3x');
 		background.scale.x = 2.5;
 		background.scale.y = 2.5;
-
-		background.antialiasing = false;
-
-		background.updateHitbox();
 		background.screenCenter(XY);
-
-		intro_shader = new PulsatingGhostEffect();
-
-		var text:Array<String> = GameAssets.text('data/shader_data/intro_pulse.txt').split('\n');
-
-		intro_shader.size = Std.parseFloat(text[0]);
-		intro_shader.power = Std.parseFloat(text[1]);
-		intro_shader.count = Std.parseInt(text[2]);
-		intro_shader.speed = Std.parseFloat(text[3]);
-
-		background.shader = intro_shader.shader;
-
 		add(background);
 
-		playButton = new FlxButton(0, 225, "BEGIN", clickPlay);
-		playButton.screenCenter(XY);
-
+		playButton = new CitroButton((CitroG.WIDTH / 2) - 80, (CitroG.HEIGHT / 2) + 100, 160, 40, "BEGIN", clickPlay);
 		add(playButton);
 	}
 
-	override public function update(elapsed:Float)
+	override public function update(delta:Int)
 	{
-		super.update(elapsed);
-
-		intro_shader.update(elapsed);
+		super.update(delta);
+		final elapsed = delta / 1000.0;
+		pulseTime += elapsed;
+		var pulse = 1.0 + (Math.sin(pulseTime * 2.0) * 0.05);
+		background.scale.x = 2.5 * pulse;
+		background.scale.y = 2.5 * pulse;
 	}
 
 	function clickPlay()
 	{
 		if (leaving)
 			return;
-
-		FlxG.switchState(() -> new TransitionState());
 		leaving = true;
+		CitroG.switchState(new TransitionState());
 	}
 }

@@ -7,6 +7,7 @@ import citro.backend.CitroTimer;
 import citro.backend.CitroEase;
 import haxe3ds.services.HID;
 import haxe3ds.services.HID.HIDKey;
+import cpp.UInt32;
 
 using StringTools;
 

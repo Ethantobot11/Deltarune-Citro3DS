@@ -1,148 +1,120 @@
 package deltarune.game.states;
 
+import citro.state.CitroState;
+import citro.object.CitroSprite;
+import citro.object.CitroText;
+import citro.object.CitroGroup;
+import citro.backend.CitroTween;
+import citro.CitroG;
 import deltarune.assets.GameAssets;
-import deltarune.assets.Paths;
 import deltarune.data.Chapter.ChapterFile;
-import deltarune.game.State;
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.group.FlxContainer;
-import flixel.group.FlxSpriteContainer;
-import flixel.sound.FlxSound;
-import flixel.text.FlxText;
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
-import flixel.util.FlxColor;
+import deltarune.Controls;
 import haxe.Json;
 
 using StringTools;
 
-class ChapterSelectState extends State
+class ChapterSelectState extends CitroState
 {
-	public var selectorSprite:FlxSprite;
-	public var quitText:FlxText;
+	public var selectorSprite:CitroSprite;
+	public var quitText:CitroText;
 	public var currentSelection:Int = 0;
-	public var chapterLabels:Array<FlxSpriteContainer> = [];
-	public var menuMoveSound:FlxSound;
-	// Format : [Group, Chapter ID, Chapter Number Text, Chapter Name, Chapter Icon Suffix]
+	public var chapterLabels:Array<CitroGroup> = [];
 	public var chapterData:Array<ChapterFile> = [];
 
 	override public function create()
 	{
 		super.create();
 
-		FlxG.camera.flash(FlxColor.BLACK, 1);
-		FlxG.camera.scroll.set(0, 64);
-		FlxG.camera.pixelPerfectRender = true;
-		FlxTween.tween(FlxG.camera.scroll, {y: 0}, 1, {ease: FlxEase.cubeOut});
-
-		FlxG.sound.playMusic(GameAssets.music(Paths.getMusic('DRONE')), 0.8, true);
-
-		menuMoveSound = new FlxSound().loadEmbedded(GameAssets.sound("sounds/menumove.wav"));
-
 		var chapterFiles = GameAssets.list("data/chapters/");
-		chapterFiles = chapterFiles.filter(function(s:String)
-		{
-			return s.endsWith(".json");
-		});
+		chapterFiles = chapterFiles.filter(function(s:String) return s.endsWith(".json"));
 
 		for (chapterFile in chapterFiles)
 		{
-			trace(chapterFile);
 			var raw = GameAssets.text('data/chapters/$chapterFile');
-			var chapter:Dynamic;
+			if (raw == null)
+				continue;
 			try
 			{
-				chapter = Json.parse(raw);
-			}
-			catch (e)
-			{
-				FlxG.log.error('Error parsing Chapter JSON for $chapterFile');
-				FlxG.log.error(e);
-				continue;
-			}
-
-			if (chapter.previousChapter != null && chapter.previousChapter != "")
-			{
-				for (i in 0...chapterData.length)
+				var chapter:Dynamic = Json.parse(raw);
+				if (chapter.previousChapter != null && chapter.previousChapter != "")
 				{
-					if (chapterData[i].id == chapter.previousChapter)
+					var inserted = false;
+					for (i in 0...chapterData.length)
 					{
-						chapterData.insert(i + 1, chapter);
-						break;
+						if (chapterData[i].id == chapter.previousChapter)
+						{
+							chapterData.insert(i + 1, chapter);
+							inserted = true;
+							break;
+						}
 					}
+					if (!inserted)
+						chapterData.push(chapter);
 				}
-				if (!chapterData.contains(chapter))
+				else
 				{
 					chapterData.push(chapter);
 				}
 			}
-			else
+			catch (e:Dynamic)
 			{
-				chapterData.push(chapter);
+				trace('Error parsing Chapter JSON for $chapterFile');
 			}
 		}
 
 		for (i in 0...chapterData.length)
 		{
-			//TO:DO scrolling when theres more than 7 chapters
-			//consider changing how dividers are added
-			var divider:FlxSprite = new FlxSprite(0, 62 + (60 * i), GameAssets.graphic('images/ui/chapter_select/divider.png'));
-			divider.scale.set(2, 2);
-			divider.updateHitbox();
-			add(divider);
+			var chapterContainer = new CitroGroup();
 
-			var chapterContainer:FlxSpriteContainer = new FlxSpriteContainer(0, 10 + (60 * i));
-
-			var numText:FlxText = new FlxText(48, 4, 0, chapterData[i].chapterSelect.label, 24);
-			numText.setFormat('', 32, FlxColor.WHITE, LEFT);
-			@:privateAccess
-			numText._defaultFormat.font = GameAssets.font(Paths.getFont('8bitoperator_jve')).fontName;
+			var numText = new CitroText(48, 10 + (60 * i), chapterData[i].chapterSelect.label);
+			numText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 			chapterContainer.add(numText);
 
-			var titleText:FlxText = new FlxText(168, 4, 384, chapterData[i].chapterSelect.title, 24);
-			titleText.setFormat('', 32, FlxColor.WHITE, CENTER);
-			@:privateAccess
-			titleText._defaultFormat.font = GameAssets.font(Paths.getFont('8bitoperator_jve')).fontName;
+			var titleText = new CitroText(168, 10 + (60 * i), chapterData[i].chapterSelect.title);
+			titleText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+			titleText.alignment = CENTER;
 			chapterContainer.add(titleText);
 
-			var chIcon:FlxSprite = new FlxSprite(552, 0, GameAssets.graphic('images/ui/chapter_select/ch_icon_${chapterData[i].chapterSelect.iconSuffix}.png'));
-			chIcon.scale.set(2, 2);
-			chIcon.updateHitbox();
+			var chIcon = new CitroSprite(552, 10 + (60 * i));
+			chIcon.loadGraphic('romfs:/assets/images/ui/chapter_select/ch_icon_${chapterData[i].chapterSelect.iconSuffix}.t3x');
+			chIcon.scale.x = 2;
+			chIcon.scale.y = 2;
 			chapterContainer.add(chIcon);
 
 			if (isChapterLocked(i))
 			{
-				chapterContainer.color = 0xFF808080;
+				chIcon.alpha = 0.5;
+				numText.alpha = 0.5;
+				titleText.alpha = 0.5;
 			}
 
 			add(chapterContainer);
-
 			chapterLabels.push(chapterContainer);
 		}
 
-		selectorSprite = new FlxSprite(20, 24, GameAssets.graphic("images/ui/chapter_select/selector.png"));
-		selectorSprite.scale.set(2, 2);
-		selectorSprite.updateHitbox();
+		selectorSprite = new CitroSprite(20, 24);
+		selectorSprite.loadGraphic("romfs:/assets/images/ui/chapter_select/selector.t3x");
+		selectorSprite.scale.x = 2;
+		selectorSprite.scale.y = 2;
 		add(selectorSprite);
 
-		var infoText = new FlxText(12, 432, 160, "(C) Toby Fox 2018-2025\nDELTARUNE v" + FlxG.stage.application.meta["version"], 12);
-		infoText.setFormat('', 16, 0xFF808080, LEFT);
-		@:privateAccess
-		infoText._defaultFormat.font = GameAssets.font(Paths.getFont('8bitoperator_jve')).fontName;
+		var infoText = new CitroText(12, 200, "(C) Toby Fox 2018-2025\nDELTARUNE v1.0");
+		infoText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+		infoText.alignment = LEFT;
 		add(infoText);
 
-		quitText = new FlxText(280, 432, 80, "Quit", 24);
-		quitText.setFormat('', 32, FlxColor.WHITE, CENTER);
-		@:privateAccess
-		quitText._defaultFormat.font = GameAssets.font(Paths.getFont('8bitoperator_jve')).fontName;
+		quitText = new CitroText(280, 200, "Quit");
+		quitText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+		quitText.alignment = CENTER;
 		add(quitText);
 
 		setSelection(currentSelection);
 	}
 
-	override public function update(elapsed:Float)
+	override public function update(delta:Int)
 	{
+		super.update(delta);
+
 		if (Controls.up.justPressed)
 		{
 			setSelection(currentSelection == -1 ? chapterLabels.length - 1 : currentSelection - 1);
@@ -152,19 +124,17 @@ class ChapterSelectState extends State
 			setSelection(currentSelection == chapterLabels.length - 1 ? -1 : currentSelection + 1);
 		}
 
-		if (FlxG.keys.justPressed.ENTER)
+		if (Controls.primary.justPressed)
 		{
 			if (currentSelection == -1)
 			{
-				#if sys
-				Sys.exit(0);
-				#end
+				CitroG.exitGame();
 			}
 			else if (!isChapterLocked(currentSelection))
-				FlxG.switchState(() -> new TransitionState(() -> new SaveSelectState()));
+			{
+				CitroG.switchState(new TransitionState(() -> new SaveSelectState()));
+			}
 		}
-
-		super.update(elapsed);
 	}
 
 	public function isChapterLocked(index:Int):Bool
@@ -177,31 +147,32 @@ class ChapterSelectState extends State
 	{
 		if (currentSelection == -1)
 		{
-			quitText.color = 0xFFFFFFFF;
+			quitText.alpha = 1.0;
 		}
 		else if (currentSelection < chapterLabels.length && !isChapterLocked(currentSelection))
 		{
-			chapterLabels[currentSelection].color = 0xFFFFFFFF;
+			for (lbl in chapterLabels)
+				for (m in lbl.members)
+					m.alpha = 1.0;
 		}
 
 		currentSelection = index;
 
 		if (currentSelection == -1)
 		{
-			quitText.color = 0xFFFFFF00;
+			quitText.alpha = 0.5;
 			selectorSprite.x = 264;
-			selectorSprite.y = 442;
+			selectorSprite.y = 210;
 		}
 		else if (currentSelection < chapterLabels.length)
 		{
 			if (!isChapterLocked(currentSelection))
 			{
-				chapterLabels[currentSelection].color = 0xFFFFFF00;
+				for (m in chapterLabels[currentSelection].members)
+					m.alpha = 0.5;
 			}
 			selectorSprite.x = 20;
 			selectorSprite.y = 24 + (60 * currentSelection);
 		}
-
-		menuMoveSound.play(true);
 	}
 }

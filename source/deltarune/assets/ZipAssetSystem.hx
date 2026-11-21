@@ -6,10 +6,6 @@ import haxe.io.Path;
 import haxe.zip.Entry;
 import haxe.zip.Reader;
 import haxe.zip.Tools;
-import lime.media.AudioBuffer;
-import openfl.display.BitmapData;
-import openfl.media.Sound;
-import openfl.text.Font;
 
 using StringTools;
 
@@ -56,17 +52,14 @@ class ZipAssetSystem implements IAssetSystem
 	public function list(directory:String, subdirectory:Bool = false):Array<String>
 	{
 		while (directory.endsWith('/') || directory.endsWith('\\'))
-			directory.substr(0, directory.length - 1);
-
+			directory = directory.substr(0, directory.length - 1);
 		var dirs:Array<String> = [];
-
 		for (fileName => entry in entries)
 		{
 			var filePath = new Path(fileName);
 			if (subdirectory ? filePath.dir.startsWith(directory) : filePath.dir == directory)
 				dirs.push(fileName.substring(directory.length));
 		}
-
 		return dirs;
 	}
 
@@ -90,18 +83,18 @@ class ZipAssetSystem implements IAssetSystem
 		return decompressEntry(entries.get('${root}/${file}'));
 	}
 
-	public function font(file:String):Font
+	public function font(file:String):Dynamic
 	{
-		return Font.fromBytes(bytes(file));
+		return file;
 	}
 
-	public function bitmap(image:String):BitmapData
+	public function bitmap(image:String):Dynamic
 	{
-		return BitmapData.fromBytes(bytes(image));
+		return image;
 	}
 
-	public function sound(sound:String):Sound
+	public function sound(sound:String):Dynamic
 	{
-		return Sound.fromAudioBuffer(AudioBuffer.fromBytes(bytes(sound)));
+		return sound;
 	}
 }

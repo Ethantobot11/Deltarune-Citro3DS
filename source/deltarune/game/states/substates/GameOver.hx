@@ -1,5 +1,5 @@
 package deltarune.game.states.substates;
 
-import deltarune.game.SubState;
+import citro.state.CitroSubState;
 
-class GameOver extends SubState {}
+class GameOver extends CitroSubState {}

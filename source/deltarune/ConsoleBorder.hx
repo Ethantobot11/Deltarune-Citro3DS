@@ -1,29 +1,24 @@
 package deltarune;
 
-import openfl.display.Bitmap;
-import openfl.display.Sprite;
-import openfl.display.Tile;
-import openfl.utils.Assets;
+import citro.CitroG;
+import citro.object.CitroSprite;
 
-class ConsoleBorder extends Sprite
+class ConsoleBorder extends CitroSprite
 {
-	public static var ids:Map<String, Int> = [];
-	public static var names:Map<Int, String> = [];
+	public static var ids:Map<String, Int> = new Map();
+	public static var names:Map<Int, String> = new Map();
+	public static var borderName:String;
 
-    public static var borderName:String;
+	public var curId(default, null):Int;
 
-    public var curId(default, null):Int;
-
-    var bitmap:Bitmap;
-    var nextId:Null<Int>;
-    var state:String = 'done'; //fadeOut, fadeIn, done
+	var nextId:Null<Int>;
+	var state:String = 'done';
+	var fadeTimer:Float = 0;
 
 	public function new()
 	{
 		super();
-
-        bitmap = new Bitmap(Assets.getBitmapData('assets/images/borders.png'));
-		addChild(bitmap);
+		loadGraphic("romfs:/assets/images/borders.t3x");
 
 		addBorder('default', 0);
 		addBorder('forest', 1);
@@ -33,79 +28,81 @@ class ConsoleBorder extends Sprite
 		addBorder('cyber', 4);
 		addBorder('queen_castle', 5);
 		addBorder('queen', 5);
+		curId = 0;
 	}
 
 	public function switchToId(id:Int = 0)
 	{
 		nextId = id;
 		state = 'fadeOut';
+		fadeTimer = 0;
 	}
 
-    public function switchTo(id:String = 'default')
-    {
-        if (ids.get(id) == curId) {return;}
+	public function switchTo(id:String = 'default')
+	{
+		if (ids.get(id) == curId)
+			return;
 		nextId = ids.get(id);
-        if (nextId == null) {nextId = 0;}
-        state = 'fadeOut';
-    }
+		if (nextId == null)
+			nextId = 0;
+		state = 'fadeOut';
+		fadeTimer = 0;
+	}
 
-    function addBorder(name:String, id:Int)
-    {
-        ids.set(name, id);
-        names.set(id, name);
-    }
+	function addBorder(name:String, id:Int)
+	{
+		ids.set(name, id);
+		names.set(id, name);
+	}
 
-    override function __enterFrame(delta:Int)
-    {
-        super.__enterFrame(delta);
-		//make this work properly once borders are seperated into their own images
-		var scale = Math.floor(Math.max(Math.max(stage.stageWidth / 960, stage.stageHeight / 540), 1)) / 2;
-		bitmap.scaleX = bitmap.scaleY = scale;
-		bitmap.x = (stage.stageWidth - (1924 * bitmap.scaleX)) / 2;
-		bitmap.y = (stage.stageHeight - (1084 * bitmap.scaleY)) / 2;
+	override function update():Bool
+	{
+		var elapsed = CitroG.deltaTime / 1000.0;
+		var scale = Math.max(CitroG.WIDTH / 400.0, CitroG.HEIGHT / 240.0);
+		this.scale.x = scale;
+		this.scale.y = scale;
+		this.x = (CitroG.WIDTH - (400 * scale)) / 2;
+		this.y = (CitroG.HEIGHT - (240 * scale)) / 2;
+		this.srcY = 240 * curId;
+		this.srcHeight = 240;
+		this.useSrcRect = true;
 
-		bitmap.y -= (1084 * bitmap.scaleY) * curId;
-
-        var elapsed = delta / 1000;
-
-        switch(state)
-        {
-            case 'fadeOut':
-				bitmap.alpha -= elapsed * (1/0.6);
-                if (bitmap.alpha <= 0)
-                {
-                    bitmap.alpha = 0;
-                    state = 'fadeIn';
-					curId = nextId;
-                }
-			case 'fadeIn':
-				bitmap.alpha += elapsed * (1/0.6);
-				if (bitmap.alpha >= 1)
+		switch (state)
+		{
+			case 'fadeOut':
+				fadeTimer += elapsed;
+				this.alpha = 1.0 - (fadeTimer / 0.6);
+				if (this.alpha <= 0)
 				{
-					bitmap.alpha = 1;
+					this.alpha = 0;
+					state = 'fadeIn';
+					curId = nextId;
+				}
+			case 'fadeIn':
+				fadeTimer += elapsed;
+				this.alpha = fadeTimer / 0.6;
+				if (this.alpha >= 1)
+				{
+					this.alpha = 1;
 					state = 'done';
 				}
-            default:
-                //prob done
-        }
-    }
+			default:
+				this.alpha = 1;
+		}
+		return super.update();
+	}
 }
 
-class SingleBorder extends Tile
+class SingleBorder extends CitroSprite
 {
-    var name(get, set):String;
+	var name(get, set):String;
 
-    inline function get_name()
-		return ConsoleBorder.names.get(id);
+	inline function get_name()
+		return ConsoleBorder.names.get(Std.int(frame));
 
 	inline function set_name(value:String)
 	{
-		id = ConsoleBorder.ids.get(value);
-        return value;
-	}
-
-	function update(delta)
-	{
-
+		frame = ConsoleBorder.ids.get(value);
+		return value;
 	}
 }

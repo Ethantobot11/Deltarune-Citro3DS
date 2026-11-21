@@ -24,9 +24,14 @@ class Chapter
 	{
 		chapterId = file.id;
 		group = file.group;
-		previousChapter = file.previousChapter ?? '';
-		for (style in Reflect.fields(file.saveStyles)) {
-			saveSelectStyles.set(style, Reflect.field(file.saveStyles, style));
+		previousChapter = file.previousChapter != null ? file.previousChapter : '';
+
+		if (file.saveStyles != null)
+		{
+			for (style in Reflect.fields(file.saveStyles))
+			{
+				saveSelectStyles.set(style, Reflect.field(file.saveStyles, style));
+			}
 		}
 		rawDat = file;
 	}

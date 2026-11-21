@@ -3,16 +3,29 @@ package;
 import citro.CitroGame;
 import deltarune.Game;
 import deltarune.Controls;
+import deltarune.GameFps;
+import deltarune.assets.GameAssets;
+import deltarune.assets.SysAssetSystem;
+import deltarune.game.states.ChapterSelectState;
 
 class Main
 {
 	public function new()
 	{
+		#if sys
+		Game.consoleArguments = Sys.args();
+		Game.enviromentVariables = Sys.environment();
+		#else
 		Game.consoleArguments = [];
 		Game.enviromentVariables = new Map<String, String>();
+		#end
+
+		GameAssets.assetSystems.push(new SysAssetSystem('default', 'romfs:/assets'));
 		Game.initialize();
 		Controls.addControllerToast();
-		var initialState = new deltarune.game.states.ChapterSelectState();
+		Game.framerateDisplay = new GameFps();
+
+		var initialState = new ChapterSelectState();
 		CitroGame.start(initialState);
 	}
 

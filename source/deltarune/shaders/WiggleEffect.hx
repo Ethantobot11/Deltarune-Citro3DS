@@ -1,6 +1,8 @@
-package deltarune.shaders; //from haxeflixel demos
+package deltarune.shaders;
 
-import flixel.system.FlxAssets.FlxShader;
+import citro.object.CitroGroup;
+import citro.object.CitroSprite;
+import citro.CitroG;
 
 enum WiggleEffectType
 {
@@ -12,125 +14,109 @@ enum WiggleEffectType
 }
 
 /**
- * Created by the HaxeFlixel Dev team (thanks!)
- * To-Do: add falloff to improve accuracy
+ * CPU-based approximation of the Wiggle effect using horizontal slice offsetting.
  */
-class WiggleEffect
+class WiggleEffect extends CitroGroup
 {
-	public var shader(default, null):WiggleShader = new WiggleShader();
 	public var effectType(default, set):WiggleEffectType = DREAMY;
-	public var waveSpeed(default, set):Float = 0;
-	public var waveFrequency(default, set):Float = 0;
-	public var waveAmplitude(default, set):Float = 0;
+	public var waveSpeed(default, set):Float = 1.0;
+	public var waveFrequency(default, set):Float = 10.0;
+	public var waveAmplitude(default, set):Float = 5.0;
 
-	public function new():Void
+	public var slices:Array<CitroSprite>;
+	public var time:Float = 0;
+	public var numSlices:Int = 20;
+	public var sliceHeight:Float = 0;
+	public var basePath:String = "";
+
+	public function new(x:Float = 0, y:Float = 0, width:Float = 400, height:Float = 240)
 	{
-		shader.uTime.value = [0];
+		super();
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		slices = [];
 	}
 
-	public function update(elapsed:Float):Void
+	public function loadGraphic(path:String)
 	{
-		shader.uTime.value[0] += elapsed;
+		basePath = path;
+		sliceHeight = height / numSlices;
+		for (i in 0...numSlices)
+		{
+			var spr = new CitroSprite();
+			spr.loadGraphic(path);
+			spr.setSourceRect(0, i * sliceHeight, width, sliceHeight);
+			spr.x = x;
+			spr.y = y + (i * sliceHeight);
+			slices.push(spr);
+			add(spr);
+		}
+	}
+
+	override public function update():Bool
+	{
+		time += (CitroG.deltaTime / 1000.0) * waveSpeed;
+
+		for (i in 0...numSlices)
+		{
+			var spr = slices[i];
+			if (spr == null || !spr.exists)
+				continue;
+
+			var yPos = y + (i * sliceHeight);
+			var offset:Float = 0;
+
+			switch (effectType)
+			{
+				case DREAMY:
+					offset = Math.sin(yPos * waveFrequency + time) * waveAmplitude;
+					spr.x = x + offset;
+					spr.y = yPos;
+				case WAVY:
+					offset = Math.sin(x * waveFrequency + time) * waveAmplitude;
+					spr.y = yPos + offset;
+					spr.x = x;
+				case HEAT_WAVE_HORIZONTAL:
+					offset = Math.sin(yPos * waveFrequency + time) * waveAmplitude;
+					spr.x = x + offset;
+					spr.y = yPos;
+				case HEAT_WAVE_VERTICAL:
+					offset = Math.sin(yPos * waveFrequency + time) * waveAmplitude;
+					spr.y = yPos + offset;
+					spr.x = x;
+				case FLAG:
+					var flagX = Math.sin(yPos * waveFrequency + 10.0 * x + time) * waveAmplitude;
+					var flagY = Math.sin(x * waveFrequency + 5.0 * yPos + time) * waveAmplitude;
+					spr.x = x + flagX;
+					spr.y = yPos + flagY;
+			}
+		}
+		return super.update();
 	}
 
 	function set_effectType(v:WiggleEffectType):WiggleEffectType
 	{
 		effectType = v;
-		shader.effectType.value = [WiggleEffectType.getConstructors().indexOf(Std.string(v))];
 		return v;
 	}
 
 	function set_waveSpeed(v:Float):Float
 	{
 		waveSpeed = v;
-		shader.uSpeed.value = [waveSpeed];
 		return v;
 	}
 
 	function set_waveFrequency(v:Float):Float
 	{
 		waveFrequency = v;
-		shader.uFrequency.value = [waveFrequency];
 		return v;
 	}
 
 	function set_waveAmplitude(v:Float):Float
 	{
 		waveAmplitude = v;
-		shader.uWaveAmplitude.value = [waveAmplitude];
 		return v;
-	}
-}
-
-class WiggleShader extends FlxShader
-{
-	@:glFragmentSource('
-		#pragma header
-		//uniform float tx, ty; // x,y waves phase
-		uniform float uTime;
-		
-		const int EFFECT_TYPE_DREAMY = 0;
-		const int EFFECT_TYPE_WAVY = 1;
-		const int EFFECT_TYPE_HEAT_WAVE_HORIZONTAL = 2;
-		const int EFFECT_TYPE_HEAT_WAVE_VERTICAL = 3;
-		const int EFFECT_TYPE_FLAG = 4;
-		
-		uniform int effectType;
-		
-		/**
-		 * How fast the waves move over time
-		 */
-		uniform float uSpeed;
-		
-		/**
-		 * Number of waves over time
-		 */
-		uniform float uFrequency;
-		
-		/**
-		 * How much the pixels are going to stretch over the waves
-		 */
-		uniform float uWaveAmplitude;
-
-		vec2 sineWave(vec2 pt)
-		{
-			float x = 0.0;
-			float y = 0.0;
-			
-			if (effectType == EFFECT_TYPE_DREAMY) 
-			{
-				float offsetX = sin(pt.y * uFrequency + uTime * uSpeed) * uWaveAmplitude;
-				pt.x += offsetX; // * (pt.y - 1.0); // <- Uncomment to stop bottom part of the screen from moving
-			}
-			else if (effectType == EFFECT_TYPE_WAVY) 
-			{
-				float offsetY = sin(pt.x * uFrequency + uTime * uSpeed) * uWaveAmplitude;
-				pt.y += offsetY; // * (pt.y - 1.0); // <- Uncomment to stop bottom part of the screen from moving
-			}
-			else if (effectType == EFFECT_TYPE_HEAT_WAVE_HORIZONTAL)
-			{
-				x = sin(pt.x * uFrequency + uTime * uSpeed) * uWaveAmplitude;
-			}
-			else if (effectType == EFFECT_TYPE_HEAT_WAVE_VERTICAL)
-			{
-				y = sin(pt.y * uFrequency + uTime * uSpeed) * uWaveAmplitude;
-			}
-			else if (effectType == EFFECT_TYPE_FLAG)
-			{
-				y = sin(pt.y * uFrequency + 10.0 * pt.x + uTime * uSpeed) * uWaveAmplitude;
-				x = sin(pt.x * uFrequency + 5.0 * pt.y + uTime * uSpeed) * uWaveAmplitude;
-			}
-			
-			return vec2(pt.x + x, pt.y + y);
-		}
-
-		void main()
-		{
-			vec2 uv = sineWave(openfl_TextureCoordv);
-			gl_FragColor = texture2D(bitmap, uv);
-		}')
-	public function new()
-	{
-		super();
 	}
 }

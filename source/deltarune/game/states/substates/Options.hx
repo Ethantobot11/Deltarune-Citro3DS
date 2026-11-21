@@ -1,19 +1,20 @@
 package deltarune.game.states.substates;
 
+import citro.CitroG;
+import citro.state.CitroSubState;
+import citro.object.CitroText;
+import citro.backend.CitroTween;
+import citro.backend.CitroTimer;
+import citro.backend.CitroEase;
+import citro.backend.CitroColor;
 import deltarune.assets.GameAssets;
 import deltarune.assets.Paths;
-import deltarune.game.SubState;
 import deltarune.game.states.MenuState;
 import deltarune.tools.LocalSave;
-import flixel.FlxG;
-import flixel.text.FlxText;
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
-import flixel.util.FlxColor;
-import flixel.util.FlxSave;
-import flixel.util.FlxTimer;
+import deltarune.Game;
+import deltarune.Controls;
 
-class Options extends SubState
+class Options extends CitroSubState
 {
 	var returning:Bool;
 	var entering:Bool;
@@ -24,7 +25,7 @@ class Options extends SubState
 		show_memory: false,
 		auto_run: false,
 		music_volume: 1.0,
-		sound_volume: 1.0,
+		sound_volume: 1.0
 	};
 
 	public static var currentData:Dynamic = {
@@ -38,7 +39,7 @@ class Options extends SubState
 
 	public static var defaultData(default, never):Dynamic = {
 		play_time: 0.0,
-		name: 'EMPTY', // create some check for any saves to switch this out for kris or another name
+		name: 'EMPTY',
 		vessel_name: 'Vessel',
 		room_name: "001",
 		room_x: 0,
@@ -50,88 +51,83 @@ class Options extends SubState
 
 	public static function initialize()
 	{
-		if (Game.globalSave.data.general != null)
+		if (Game.globalSave != null && Game.globalSave.data.general != null)
 		{
 			generalData = Game.globalSave.data.general;
-			FlxG.drawFramerate = FlxG.updateFramerate = (generalData.fps is Int) ? generalData.fps : 30;
 		}
-		else
+		else if (Game.globalSave != null)
 		{
 			Game.globalSave.data.general = generalData;
 			Game.globalSave.flush();
 		}
 
-		if (Game.chapterSave.data.general == null)
+		if (Game.chapterSave != null && Game.chapterSave.data.general == null)
 		{
 			Game.chapterSave.data.general = defaultData;
 		}
 
-		currentData = Game.chapterSave.data.general;
+		if (Game.chapterSave != null)
+		{
+			currentData = Game.chapterSave.data.general;
+		}
 	}
 
-	/*
-	 * load all data from another save and change save dest/id save
-	 */
 	public static function loadNewSave(target_save_destination:String = null, target_save_id:Int = null)
 	{
-		Game.chapterSave.bind('${Game.nullSwitch(target_save_destination, save_destination)}_${Game.nullSwitch(target_save_id, save_id)}', 'savedata');
-
-		if (Game.chapterSave.data.general == null)
+		if (Game.chapterSave != null)
 		{
-			Game.chapterSave.data.general = defaultData;
+			Game.chapterSave.bind('${Game.nullSwitch(target_save_destination, save_destination)}_${Game.nullSwitch(target_save_id, save_id)}', 'savedata');
+			if (Game.chapterSave.data.general == null)
+			{
+				Game.chapterSave.data.general = defaultData;
+			}
+			currentData = Game.chapterSave.data.general;
 		}
-
-		currentData = Game.chapterSave.data.general;
 	}
 
-	/*
-	 * save all data on the current save
-	 */
 	public static function saveCurrentSave()
 	{
-		Game.chapterSave.bind('${save_destination}_${save_id}', 'savedata');
-		Game.chapterSave.data.general = currentData;
-		Game.chapterSave.flush();
+		if (Game.chapterSave != null)
+		{
+			Game.chapterSave.bind('${save_destination}_${save_id}', 'savedata');
+			Game.chapterSave.data.general = currentData;
+			Game.chapterSave.flush();
+		}
 	}
 
-	/*
-	 * quickly grabs the save data from another destination and ID, not for writing
-	 * returns default data is no save is found
-	 */
 	public static function grabSaveData(data:String, target_save_destination:String = null, target_save_id:Int = null):Dynamic
 	{
 		var temp_save = new LocalSave();
 		temp_save.bind('${Game.nullSwitch(target_save_destination, save_destination)}_${Game.nullSwitch(target_save_id, save_id)}');
 
-		if (temp_save.data.general == null)
+		if (temp_save.data == null || !Reflect.hasField(temp_save.data, "general") || Reflect.field(temp_save.data, "general") == null)
 			return NoSuccess.NoSaveData;
 
-		return Reflect.field(temp_save.data.general, data);
+		var general = Reflect.field(temp_save.data, "general");
+		if (!Reflect.hasField(general, data))
+			return NoSuccess.NoData;
+
+		return Reflect.field(general, data);
 	}
 
-	/*
-	 * silently saves some data into the current save
-	 * returns data saved
-	 */
 	public static function plopDataIntoSave(data:Dynamic, field:String)
 	{
-		Reflect.setField(Game.chapterSave.data.general, field, data);
-		Game.chapterSave.flush(); // all the currently active data is in "currentData" not the save object
+		if (Game.chapterSave != null)
+		{
+			if (Game.chapterSave.data.general == null)
+				Game.chapterSave.data.general = {};
+			Reflect.setField(Game.chapterSave.data.general, field, data);
+			Game.chapterSave.flush();
+		}
 		return data;
 	}
 
-	/*
-	 * changes save location without modifying current data or target data
-	 */
 	public static function selectSaveDestination(target_destination:String, target_id:Int)
 	{
 		save_destination = target_destination;
 		save_id = target_id;
 	}
 
-	/*
-	 * convenience function (selectSaveDestination(), saveCurrentSave(), selectSaveDestination())
-	 */
 	public static function saveToOtherSave(revert:Bool = false, target_destination:String, save_id:Int)
 	{
 		var prevSaveDest = save_destination;
@@ -144,19 +140,17 @@ class Options extends SubState
 			selectSaveDestination(prevSaveDest, prevSaveId);
 	}
 
-	public static function copySaveToSave(copyFrom:FlxSave, copyTo:FlxSave):Bool
+	public static function copySaveToSave(copyFrom:LocalSave, copyTo:LocalSave):Bool
 	{
 		try
 		{
 			var fields:Array<String> = Reflect.fields(copyFrom.data);
-
 			copyTo.erase();
 			for (field in fields)
 			{
-				Reflect.setProperty(copyTo, field, Reflect.getProperty(copyFrom, field));
+				Reflect.setField(copyTo.data, field, Reflect.field(copyFrom.data, field));
 			}
 			copyTo.flush();
-
 			return true;
 		}
 		catch (e)
@@ -169,15 +163,16 @@ class Options extends SubState
 	public static function setGeneralData(field:String, value:Dynamic, ?flush:Bool = true)
 	{
 		trace('setting $field to $value');
-		Reflect.setProperty(generalData, field, value);
-		if (Reflect.getProperty(generalData, field) == value)
+		Reflect.setField(generalData, field, value);
+		if (Reflect.field(generalData, field) == value)
 		{
 			trace('success!');
 		}
-		Game.globalSave.data.general = generalData;
-		if (flush)
+		if (Game.globalSave != null)
 		{
-			Game.globalSave.flush();
+			Game.globalSave.data.general = generalData;
+			if (flush)
+				Game.globalSave.flush();
 		}
 	}
 
@@ -192,27 +187,26 @@ class Options extends SubState
 		returning = false;
 		entering = true;
 
-		FlxTween.tween(MenuState.instance.playButton, {alpha: 0}, 0.5);
-		FlxTween.tween(MenuState.instance.credsButton, {alpha: 0}, 0.5);
-		FlxTween.tween(MenuState.instance.optButton, {alpha: 0}, 0.5);
-
-		if (Game.developerMode)
+		if (MenuState.instance != null)
 		{
-			FlxTween.tween(MenuState.instance.dialogueEditButton, {alpha: 0}, 0.5);
-			FlxTween.tween(MenuState.instance.charEditButton, {alpha: 0}, 0.5);
-			FlxTween.tween(MenuState.instance.battleEditButton, {alpha: 0}, 0.5);
-			FlxTween.tween(MenuState.instance.chapterEditButton, {alpha: 0}, 0.5);
+			if (MenuState.instance.playButton != null)
+				CitroTween.tween(MenuState.instance.playButton, {alpha: 0}, 0.5);
+			if (MenuState.instance.credsButton != null)
+				CitroTween.tween(MenuState.instance.credsButton, {alpha: 0}, 0.5);
+			if (MenuState.instance.optButton != null)
+				CitroTween.tween(MenuState.instance.optButton, {alpha: 0}, 0.5);
 		}
 
-		new FlxTimer().start(0.5, postCreate);
+		CitroTimer.start(0.5, postCreate);
 
 		var maxFpsOption = new Option(options.length, 'FPS', generalData.fps, 'fps', 'int', {
 			change: 5,
 			min: 30,
-			max: 500, // the fastest monitors dont go past 500hz, also, do you really need to play DELTARUNE at 500 FPS?
+			max: 60,
 			change_func: function(value, change)
 			{
-				FlxG.updateFramerate = FlxG.drawFramerate = (value is Int) ? value : 30;
+				Options.setGeneralData('fps', value);
+				//CitroG.setFPS(value);
 			},
 			current: false
 		});
@@ -227,41 +221,33 @@ class Options extends SubState
 		options.push(showMemOption);
 		add(showMemOption);
 
-		var widescreenOption = new Option(options.length, '16:9 Widescreen Mode', generalData.widescreen, 'widescreen', 'bool', {current: false});
-		options.push(widescreenOption);
-		add(widescreenOption);
-
-		if (Game.developerMode)
-		{
-			var battleBox = new Option(options.length, 'Test - Battle Box', generalData.show_fps, 'show_fps', 'none', {
-				current: false,
-				change_func: function(value, change)
-				{
-					FlxG.switchState(() -> new deltarune.editors.BattleBoxTestState());
-				}
-			});
-			options.push(battleBox);
-			add(battleBox);
-		}
-
 		bgColor = 0x00000000;
 		changeIndex();
 	}
 
-	public function postCreate(_)
+	public function postCreate()
 	{
 		entering = false;
-		FlxTween.tween(FlxG.camera.scroll, {x: 640}, 1, {ease: FlxEase.quadInOut});
 	}
 
-	override public function update(elapsed:Float)
+	override public function update(delta:Int)
 	{
+		super.update(delta);
+		final elapsed = delta / 1000.0;
+
 		if (!returning && !entering)
 		{
-			if (Controls.back.justPressed || FlxG.keys.justPressed.ESCAPE)
+			if (Controls.back.justPressed)
 			{
 				returning = true;
-				FlxTween.tween(FlxG.camera.scroll, {x: 0}, 1, {ease: FlxEase.circInOut, onComplete: MenuState.instance.exitCredits});
+				if (MenuState.instance != null)
+				{
+					MenuState.instance.exitCredits();
+				}
+				else
+				{
+					close();
+				}
 			}
 
 			if (Controls.left.justPressed)
@@ -283,11 +269,9 @@ class Options extends SubState
 			opt.alpha = 0.75;
 			if (opt.index == index)
 			{
-				opt.alpha = 1;
+				opt.alpha = 1.0;
 			}
 		}
-
-		super.update(elapsed);
 	}
 
 	function changeIndex(chng:Int = 0)
@@ -300,78 +284,61 @@ class Options extends SubState
 	}
 }
 
-class Option extends FlxText
+class Option extends CitroText
 {
 	public var index:Int;
-
 	public var optLabel:String;
-
 	public var value:Dynamic;
 
 	var field:String;
-
 	var type:String;
-
 	var properties:OptionConfig;
 
 	public function new(index:Int, text:String, value:Dynamic, field:String, type:String, ?properties:OptionConfig)
 	{
-		super((FlxG.width * 2) - (320 + 10), (index * 40) + 10, 320, text);
-		setFormat('', 32, FlxColor.WHITE, RIGHT);
-		_defaultFormat.font = GameAssets.font(Paths.getFont('8bitoperator_jve')).fontName;
-		antialiasing = false;
+		// Adapted for 3DS Top Screen (400px width)
+		super((CitroG.WIDTH) - (160 + 10), (index * 30) + 20, text);
+		loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+
+		alignment = RIGHT;
 		this.properties = properties;
 		this.index = index;
 		this.value = value;
 		this.field = field;
 		this.type = type;
 		optLabel = text;
+		updateText();
 	}
 
-	public function select()
+	function updateText()
 	{
 		switch (type)
 		{
-			case 'int':
-				trace('cant select int');
-			case 'float':
-				trace('cant select float');
-			case 'bool':
-				if (value == true)
-				{
-					value = false;
-				}
-				else
-				{
-					value = true;
-				}
-				if (properties.current)
-				{
-					trace('oops');
-				}
-				else
-				{
-					Options.setGeneralData(field, value);
-				}
-			default:
-				trace('invalid');
-		}
-	}
-
-	override public function update(elapsed:Float)
-	{
-		switch (type)
-		{
-			case 'int':
-				text = '< ' + value + ' > - ' + optLabel;
-			case 'float':
+			case 'int', 'float':
 				text = '< ' + value + ' > - ' + optLabel;
 			case 'bool':
 				text = '< ' + (value ? 'Yes' : 'No') + ' > - ' + optLabel;
 			default:
 				text = optLabel;
 		}
-		super.update(elapsed);
+	}
+
+	public function select()
+	{
+		switch (type)
+		{
+			case 'int', 'float':
+				trace('cant select int/float directly, use left/right');
+			case 'bool':
+				value = !value;
+				if (!properties.current)
+				{
+					Options.setGeneralData(field, value);
+				}
+			default:
+				trace('invalid');
+		}
+		updateText();
 	}
 
 	public function change(change:Int)
@@ -380,53 +347,28 @@ class Option extends FlxText
 		{
 			case 'int':
 				if (value == null || !(value is Int))
-				{
 					value = 0;
-				}
 				value += change * Std.int(properties.change);
 				if (value < properties.min)
-				{
 					value = Std.int(properties.min);
-				}
 				if (value > properties.max)
-				{
 					value = Std.int(properties.max);
-				}
-				if (properties.current)
-				{
-					trace('oops');
-				}
-				else
-				{
+				if (!properties.current)
 					Options.setGeneralData(field, value);
-				}
 			case 'float':
 				trace('not complete');
 			case 'bool':
-				if (value == true)
-				{
-					value = false;
-				}
-				else
-				{
-					value = true;
-				}
-				if (properties.current)
-				{
-					trace('oops');
-				}
-				else
-				{
+				value = !value;
+				if (!properties.current)
 					Options.setGeneralData(field, value);
-				}
 			default:
 				trace('invalid');
 		}
-
 		if (properties.change_func != null)
 		{
 			properties.change_func(value, change);
 		}
+		updateText();
 	}
 }
 

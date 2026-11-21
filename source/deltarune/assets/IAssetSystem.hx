@@ -1,9 +1,6 @@
 package deltarune.assets;
 
 import haxe.io.Bytes;
-import openfl.display.BitmapData;
-import openfl.media.Sound;
-import openfl.text.Font;
 
 interface IAssetSystem
 {
@@ -13,7 +10,7 @@ interface IAssetSystem
 	public function directoryExists(directory:String):Bool;
 	public function text(file:String):String;
 	public function bytes(file:String):Bytes;
-	public function font(file:String):Font;
-	public function bitmap(image:String):BitmapData;
-	public function sound(sound:String):Sound;
+	public function font(file:String):Dynamic;
+	public function bitmap(image:String):Dynamic;
+	public function sound(sound:String):Dynamic;
 }
