@@ -72,7 +72,9 @@ class SaveSelectState extends CitroState
 		var h = Std.int(s / 3600);
 		var m = Std.int((s % 3600) / 60);
 		var sec = s % 60;
-		return '${h}:${m < 10 ? "0" + m : m}:${sec < 10 ? "0" + sec : sec}';
+		var mStr = m < 10 ? "0" + m : Std.string(m);
+		var secStr = sec < 10 ? "0" + sec : Std.string(sec);
+		return '$h:$mStr:$secStr';
 	}
 
 	override public function update(delta:Int)
