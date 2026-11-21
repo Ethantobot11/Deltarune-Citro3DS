@@ -10,5 +10,7 @@
     "iconSuffix": "ch2"
   },
   "saveCount": 3,
-  "saveSelectStyles": [{ "style": "default" }]
+  "saveSelectStyles": [
+    { "style": "default" }
+  ]
 }

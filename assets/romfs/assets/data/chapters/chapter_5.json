@@ -3,7 +3,9 @@
   "group": "DELTARUNE",
   "type": "dummy",
   "previousChapter": "chapter_4",
-  "requiredChapters": ["chapter_4"],
+  "requiredChapters": [
+    "chapter_4"
+  ],
   "chapterSelect": {
     "label": "Chapter 5",
     "title": "- -",
