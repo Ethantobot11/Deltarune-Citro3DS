@@ -9,7 +9,7 @@ import deltarune.Controls;
 import deltarune.Game;
 import deltarune.game.states.substates.Credits;
 import deltarune.game.states.substates.Options;
-import deltarune.game.states.substates.ChapterSelectState;
+import deltarune.game.states.ChapterSelectState;
 
 class MenuState extends CitroState
 {
