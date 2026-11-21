@@ -7,6 +7,7 @@ import citro.object.CitroSprite;
 import citro.backend.CitroTween;
 import citro.CitroG;
 import deltarune.assets.GameAssets;
+import deltarune.game.MenuBackground;
 import deltarune.Controls;
 import deltarune.Game;
 
