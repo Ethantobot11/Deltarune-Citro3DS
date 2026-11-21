@@ -4,11 +4,32 @@ class CitroSoundSystem {
     public var volume:Float = 1.0;
     public var muted:Bool = false;
     public var activeSounds:Array<CitroSound> = [];
+    public var currentMusic:CitroSound = null;
 
     public function new() {
         #if (!wiiu || !cafe)
         untyped __cpp__("cwavUseEnvironment(0)");
         #end
+    }
+
+    public function playMusic(path:String, ?vol:Float = 1.0):Void {
+        if (currentMusic != null && currentMusic.path == path && currentMusic.isPlaying) {
+            return;
+        }
+        stopMusic();
+        currentMusic = new CitroSound(path);
+        currentMusic.volume = muted ? 0.0 : (vol != null ? vol : this.volume);
+        currentMusic.looped = true;
+        currentMusic.play();
+        activeSounds.push(currentMusic);
+    }
+
+    public function stopMusic():Void {
+        if (currentMusic != null) {
+            currentMusic.stop();
+            activeSounds.remove(currentMusic);
+            currentMusic = null;
+        }
     }
 
     public function play(path:String, ?vol:Float = 1.0, ?looped:Bool = false):CitroSound {
