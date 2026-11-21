@@ -19,17 +19,11 @@ class CitroState {
     };
 
     public function update(delta:Int) {
-        for (member in members) {
-            member.update();
-            if (Game.framerateDisplay != null) {
-                Game.framerateDisplay.updateFPS(delta / 1000.0);
-            }
-        }
-    }
+    };
 
     public function destroy() {
         for (member in members) {
-            member.destroy();
+            if (member != null) member.destroy();
         }
         members.splice(0, members.length);
     }
