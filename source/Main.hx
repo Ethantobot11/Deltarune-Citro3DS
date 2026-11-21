@@ -1,5 +1,6 @@
 package;
 
+import citro.CitroG;
 import citro.CitroGame;
 import deltarune.CrashHandler;
 import deltarune.Game;
