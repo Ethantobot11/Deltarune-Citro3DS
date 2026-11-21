@@ -52,25 +52,36 @@ class CitroGame {
 	}
 
 	public static function start(state:CitroState) {
-		if (state == null) {
-			return;
-		}
+		if (state == null) return;
 
 		GFX.init();
 		RomFS.init();
 
 		untyped __cpp__('
-			C2D_Init(20000); 
+			C2D_Init(20000);
 			C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
 			C2D_Prepare();
-
-			topScreen = C2D_CreateScreenTarget(GFX_TOP,	GFX_LEFT);
+			topScreen = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 			bottomScreen = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 		');
 
 		(CitroG.state = state).create();
+
+		var lastFrame:Int = OS.time.toInt();
+
 		while (APT.mainLoop() && !_shouldQuit) {
-			final startTime = OS.time.toInt();
+			final now:Int = OS.time.toInt();
+			final target = CitroG.targetFps > 0 ? CitroG.targetFps : 60;
+			final interval = Std.int(1000 / target);
+			if (now - lastFrame < interval) {
+				continue;
+			}
+
+			var frameDelta = now - lastFrame;
+			if (frameDelta < 1) frameDelta = 1;
+			if (frameDelta > 33) frameDelta = 33;
+			CitroG.deltaTime = frameDelta;
+			lastFrame = now;
 
 			untyped __cpp__('
 				C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
@@ -84,14 +95,10 @@ class CitroGame {
 			CitroG.state.update(CitroG.deltaTime);
 
 			final sub = CitroG.substate;
-			if (sub != null) {
-				sub.update(CitroG.deltaTime);
-			}
+			if (sub != null) sub.update(CitroG.deltaTime);
 
 			renderState(CitroG.state);
-			if (sub != null) {
-				renderState(sub);
-			}
+			if (sub != null) renderState(sub);
 
 			if (CitroG.globalOverlay != null && !CitroG.globalOverlay.isDestroyed) {
 				if (CitroG.globalOverlay.bottom) {
@@ -106,20 +113,12 @@ class CitroGame {
 				C2D_Flush();
 				C3D_FrameEnd(0);
 			');
-
-			var elapsed = OS.time.toInt() - startTime;
-
-			if (elapsed < 1) elapsed = 1;
-			if (elapsed > 33) elapsed = 33; 
-			
-			CitroG.deltaTime = elapsed;
 		}
 
 		untyped __cpp__('
 			C3D_Fini();
 			C2D_Fini();
 		');
-
 		RomFS.exit();
 		GFX.exit();
 	}
