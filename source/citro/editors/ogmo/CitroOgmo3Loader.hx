@@ -86,14 +86,21 @@ class CitroOgmo3Loader {
         return null;
     }
 
-    static function sanitizeJson(json:String):String {
-        if (json == null) return "";
+    static function sanitizeJson(raw:String):String
+    {
+        if (raw == null) return "";
+        if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF)
+            raw = raw.substr(3);
+        else if (raw.length > 0 && raw.charCodeAt(0) == 0xFEFF)
+            raw = raw.substr(1);
+    
         var buf = new StringBuf();
-        for (i in 0...json.length) {
-            var code = json.charCodeAt(i);
-            if (code >= 32 || code == 9 || code == 10 || code == 13) {
-                buf.addChar(code);
-            }
+        var i = 0;
+        var len = raw.length;
+        while (i < len) {
+            var c = raw.charCodeAt(i);
+            if (c >= 32 || c == 9 || c == 10 || c == 13) buf.addChar(c);
+            i++;
         }
         return buf.toString();
     }
