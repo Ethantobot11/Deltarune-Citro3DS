@@ -221,7 +221,7 @@ class Options extends CitroSubState
 		options.push(showMemOption);
 		add(showMemOption);
 
-		bgColor = 0x00000000;
+		//bgColor = 0x00000000;
 		changeIndex();
 	}
 
@@ -294,15 +294,14 @@ class Option extends CitroText
 	var type:String;
 	var properties:OptionConfig;
 
-	public function new(index:Int, text:String, value:Dynamic, field:String, type:String, ?properties:OptionConfig)
+	public function new(idx:Int, text:String, value:Dynamic, field:String, type:String, ?properties:OptionConfig)
 	{
-		// Adapted for 3DS Top Screen (400px width)
-		super((CitroG.WIDTH) - (160 + 10), (index * 30) + 20, text);
+		super((CitroG.WIDTH) - (160 + 10), (idx * 30) + 20, text);
 		loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 
 		alignment = RIGHT;
 		this.properties = properties;
-		this.optIndex = optIndex;
+		this.optIndex = idx;
 		this.value = value;
 		this.field = field;
 		this.type = type;

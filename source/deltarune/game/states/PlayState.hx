@@ -7,6 +7,7 @@ import citro.object.CitroGroup;
 import citro.editors.ogmo.CitroOgmo3Loader;
 import deltarune.game.Player;
 import deltarune.game.LegacyDialogueBox;
+import deltarune.game.objects.InteractableSprite.*;
 import deltarune.game.objects.*;
 import deltarune.Controls;
 import deltarune.Game;
