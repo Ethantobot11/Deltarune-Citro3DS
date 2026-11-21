@@ -9,12 +9,10 @@ class Player extends CitroAnimate
 {
 	public var baseSpeed:Float = 180;
 	public var runningTime:Float = 0;
-
 	public var collider:LinkedCollider;
 	public var colliderOffset:Array<Int> = [12, 42];
 	public var colliderSize:Array<Int> = [18, 36];
 	public var interactionCollider:CitroObject;
-
 	public var controlArray:Array<String> = [];
 	public var lastAnimation:String = '_';
 	public var warped:Bool = false;
@@ -32,17 +30,14 @@ class Player extends CitroAnimate
 		super();
 		this.x = x;
 		this.y = y;
-		var ceaPath = 'romfs:/assets/images/characters/$character/spritesheet.cea';
-		loadCEA(ceaPath, "down");
+		loadCEA('romfs:/assets/images/characters/$character/spritesheet.cea', "down");
 
 		collider = new LinkedCollider(x + colliderOffset[0], y + colliderOffset[1], colliderSize[0], colliderSize[1]);
 		interactionCollider = new CitroObject();
 		interactionCollider.width = 32;
 		interactionCollider.height = 52;
-
 		collider.linkedObjects.set(this, {x: colliderOffset[0], y: colliderOffset[1]});
 		collider.linkedObjects.set(interactionCollider, {x: 8, y: 16});
-
 		reverseposition();
 	}
 
@@ -50,11 +45,8 @@ class Player extends CitroAnimate
 	{
 		if (anim == null)
 			anim = lastAnimation;
-
 		if (curAnim != anim || finished)
-		{
 			play(anim);
-		}
 		lastAnimation = anim;
 	}
 
@@ -69,18 +61,14 @@ class Player extends CitroAnimate
 	override public function update():Bool
 	{
 		if (controlArray.length <= 0)
-		{
 			updateMovement();
-		}
 		return super.update();
 	}
 
 	function updateMovement()
 	{
-		var up = Controls.up.pressed;
-		var down = Controls.down.pressed;
-		var left = Controls.left.pressed;
-		var right = Controls.right.pressed;
+		var up = Controls.up.pressed, down = Controls.down.pressed;
+		var left = Controls.left.pressed, right = Controls.right.pressed;
 		running = Controls.secondary.pressed;
 
 		if (up && down)
@@ -98,7 +86,6 @@ class Player extends CitroAnimate
 		{
 			var speed = running ? baseSpeed * 1.5 : baseSpeed;
 			runningTime += CitroG.deltaTime / 1000.0;
-
 			var vx:Float = 0, vy:Float = 0;
 			if (up)
 			{
@@ -120,7 +107,6 @@ class Player extends CitroAnimate
 				vx = speed;
 				facing = RIGHT;
 			}
-
 			if (vx != 0 && vy != 0)
 			{
 				vx *= 0.707;
@@ -137,7 +123,6 @@ class Player extends CitroAnimate
 				case UP: "up";
 				default: "down";
 			}
-
 			framerate = running ? 16 : 8;
 			playAnimation("walk-" + dirStr);
 		}
@@ -154,7 +139,6 @@ class Player extends CitroAnimate
 			}
 			playAnimation(dirStr);
 		}
-
 		this.x = collider.x - colliderOffset[0];
 		this.y = collider.y - colliderOffset[1];
 		interactionCollider.x = collider.x - 8;
@@ -182,23 +166,5 @@ class LinkedCollider extends CitroObject
 		this.y = y;
 		this.width = width;
 		this.height = height;
-	}
-
-	override public function set_x(value:Float):Float
-	{
-		for (obj => offset in linkedObjects)
-		{
-			obj.x = value - offset.x;
-		}
-		return x = value;
-	}
-
-	override public function set_y(value:Float):Float
-	{
-		for (obj => offset in linkedObjects)
-		{
-			obj.y = value - offset.y;
-		}
-		return y = value;
 	}
 }

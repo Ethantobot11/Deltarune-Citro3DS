@@ -7,6 +7,7 @@ import sys.io.FileOutput;
 import sys.FileSystem;
 import citro.CitroG;
 import citro.state.CitroState;
+import deltarune.game.states.MenuState;
 
 class CrashHandler
 {

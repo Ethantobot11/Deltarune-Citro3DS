@@ -267,7 +267,7 @@ class Options extends CitroSubState
 		for (opt in options)
 		{
 			opt.alpha = 0.75;
-			if (opt.index == index)
+			if (opt.optIndex == index)
 			{
 				opt.alpha = 1.0;
 			}
@@ -286,7 +286,7 @@ class Options extends CitroSubState
 
 class Option extends CitroText
 {
-	public var index:Int;
+	public var optIndex:Int;
 	public var optLabel:String;
 	public var value:Dynamic;
 
@@ -302,7 +302,7 @@ class Option extends CitroText
 
 		alignment = RIGHT;
 		this.properties = properties;
-		this.index = index;
+		this.optIndex = optIndex;
 		this.value = value;
 		this.field = field;
 		this.type = type;
