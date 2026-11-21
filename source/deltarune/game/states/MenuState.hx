@@ -23,7 +23,7 @@ class MenuState extends CitroState
     {
         super.create();
         instance = this;
-        CitroG.sound.playMusic(Paths.getMusic('Before the Story'), 0.8);
+        CitroG.sound.playMusic(Paths.getMusic('Before the Story'), 0.8, true);
 
         coolBG = new MenuBackground();
         add(coolBG);
