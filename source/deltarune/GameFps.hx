@@ -12,8 +12,13 @@ class GameFps extends CitroText
 
 	public function new()
 	{
-		super(10, 8, "");
+		super(4, 2, "");
 		loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+	}
+
+	override public function update():Bool {
+		updateFPS(CitroG.deltaTime / 1000.0);
+		return super.update();
 	}
 
 	public function updateFPS(delta:Float)
