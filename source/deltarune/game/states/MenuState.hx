@@ -48,4 +48,4 @@ class MenuState extends CitroState
         CitroG.substate = null;
         playButton.alpha = 1; credsButton.alpha = 1; optButton.alpha = 1;
     }
-} k,à
+}
