@@ -65,7 +65,7 @@ class CitroGame {
 			bottomScreen = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 		');
 
-				(CitroG.state = state).create();
+		(CitroG.state = state).create();
 
 		var lastFrame:Int = OS.time.toInt();
 
