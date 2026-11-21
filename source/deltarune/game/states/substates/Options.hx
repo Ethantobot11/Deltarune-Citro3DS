@@ -186,7 +186,7 @@ class Options extends CitroSubState
 	{
 		super.create();
 
-		CitroG.sound.playMusic(GameAssets.music(Paths.getMusic('Before the Story')), 0.8, true);
+		CitroG.sound.playMusic(Paths.getMusic('Before the Story'), 0.8, true);
 		
         var bg = new MenuBackground();
 		add(bg);
