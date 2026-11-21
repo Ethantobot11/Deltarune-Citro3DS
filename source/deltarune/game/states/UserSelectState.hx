@@ -19,7 +19,7 @@ class UserSelectState extends CitroState
 		var users:Array<String> = [];
 
 		#if sys
-		var saveDataDir = 'sdmc:/DELTASHIT/savedata/global/';
+		var saveDataDir = 'sdmc:/Deltarune-Citro3DS/savedata/global/';
 		
 		if (FileSystem.exists(saveDataDir))
 		{
