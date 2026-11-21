@@ -1,7 +1,7 @@
 package deltarune.game.objects;
 
-import flixel.addons.editors.ogmo.FlxOgmo3Loader.EntityData;
-import flixel.FlxObject;
+import citro.object.CitroObject;
+import citro.editor.CitroOgmo3Loader.EntityData;
 
 import deltarune.scripting.GameScript;
 
@@ -20,7 +20,7 @@ class ScriptObject extends InteractableSprite
         script.callFunction('objectCreate', [X, Y, Entity, Values]);
 		if (interactionHitbox == null)
 		{
-			interactionHitbox = new FlxObject(X, Y, 0, 0);
+			interactionHitbox = new CitroObject(X, Y, 0, 0);
         }
     }
 

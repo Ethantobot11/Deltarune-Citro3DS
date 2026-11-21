@@ -144,9 +144,12 @@ class PlayState extends CitroState
 		resolveCollision(player.collider, interactables);
 		if (player.controlArray.length <= 0)
 		{
-			for (interactable in interactables.members)
+			for (member in interactables.members)
 			{
-				if (interactable.exists && CitroG.overlaps(player.interactionCollider, interactable.interactionHitbox))
+				var interactable:InteractableSprite = cast member;
+				if (interactable != null
+					&& interactable.exists
+					&& CitroG.overlaps(player.interactionCollider, interactable.interactionHitbox))
 				{
 					if (Controls.primary.justPressed || interactable.autoTriggered)
 					{

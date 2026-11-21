@@ -1,12 +1,6 @@
 package deltarune.assets;
 
-import openfl.display.BitmapData;
-
 using StringTools;
-
-#if sys
-import sys.io.File;
-#end
 
 class Paths
 {
@@ -31,60 +25,66 @@ class Paths
 	}
 
 	public static inline function getSound(file:String):String
-			return 'romfs:/assets/sounds/$file.cwav';
+		return 'romfs:/assets/sounds/$file.cwav';
 
-	//why does this exist?
-	public static inline function getPortrait(character:String)
+	public static inline function getPortrait(character:String):String
 		return 'romfs:/assets/images/dialogue/$character.t3x';
 
-	public static function getBitmapSys(image:String)
+	public static function getBitmapSys(image:String):String
 	{
-		if (GameAssets.exists('/images/$image.t3x'))
-			return GameAssets.bitmap('/images/' + image + '.t3x');
+		var path = 'romfs:/assets/images/$image.t3x';
+		if (GameAssets.exists(path))
+			return path;
 		return null;
 	}
 
 	public static function getJSON(file:String, folder:String = 'data', ext:String = 'json'):Dynamic
 	{
-		var coolContent = '{"vthrow":"Error occured while loading JSON"}';
-		var json = {vthrow: "Failed to parse JSON"};
-		if (GameAssets.exists('$folder/$file.$ext'))
-			coolContent = GameAssets.text('$folder/$file.$ext');
-		try
+		var path = 'romfs:/assets/$folder/$file.$ext';
+		if (GameAssets.exists(path))
 		{
-			json = haxe.Json.parse(coolContent);
+			try
+			{
+				return haxe.Json.parse(GameAssets.text(path));
+			}
+			catch (e:Dynamic)
+			{
+				trace('failed to parse JSON: $e');
+				return null;
+			}
 		}
-		catch (e)
-		{
-			trace('failed to parse JSON');
-			trace('throw error:' + e.message);
-			return null;
-		}
-		return json;
-	}
-
-	//note: this will be removed along with all things relating to the ogmo editor
-	/**
-	 * [Description]
-	 * @param ogmopath the path according to ogmo editor eg: ../images/cyberassetsmini.png to C:/gamedir/assets/images/cyberassetsmini.png
-	 * @return a String of the path
-	 */
-	public static function getOgmoBitmap(path:String, fileLocation:String)
-	{
-		var fixedPath = Sys.getCwd() + path.replace('../', '/assets/');
-		if (GameAssets.exists(fixedPath))
-		{
-			return GameAssets.bitmap(fixedPath);
-		}
+		trace('JSON file not found: $path');
 		return null;
 	}
 
-	//why does this exist?
-	public static function getTextSound(character:String = 'default')
+	/**
+	 * Converts an Ogmo editor relative path (e.g., "../images/cyberassetsmini.png") 
+	 * to a 3DS romfs absolute path (e.g., "romfs:/assets/images/cyberassetsmini.t3x").
+	 */
+	public static function getOgmoBitmap(ogmoPath:String, fileLocation:String):String
 	{
-		var fixedPath = 'sounds/text_' + character.split('-')[0] + '.cwav';
+		var cleanPath = ogmoPath.replace('../', '').replace('./', '');
+		if (cleanPath.endsWith('.png'))
+		{
+			cleanPath = cleanPath.substr(0, cleanPath.length - 4) + '.t3x';
+		}
+
+		var fixedPath = 'romfs:/assets/' + cleanPath;
+
+		if (GameAssets.exists(fixedPath))
+		{
+			return fixedPath;
+		}
+
+		trace('Ogmo asset not found at: $fixedPath (original: $ogmoPath)');
+		return fixedPath;
+	}
+
+	public static function getTextSound(character:String = 'default'):String
+	{
+		var fixedPath = 'romfs:/assets/sounds/text_' + character.split('-')[0] + '.cwav';
 		if (!GameAssets.exists(fixedPath))
-			fixedPath = 'sounds/text_default.cwav';
+			fixedPath = 'romfs:/assets/sounds/text_default.cwav';
 		return fixedPath;
 	}
 }

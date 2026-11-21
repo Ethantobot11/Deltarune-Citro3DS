@@ -1,7 +1,7 @@
 package deltarune.editors;
 
 import deltarune.game.LegacyDialogueBox;
-import flixel.FlxSubState;
+import citro.state.CitroState;
 
 class DialogueTestSState extends CitroState
 {

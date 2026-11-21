@@ -3,12 +3,13 @@ package deltarune.game.states;
 import citro.CitroG;
 import citro.state.CitroState;
 import citro.object.CitroSprite;
-import citro.object.CitroText;
 import citro.object.CitroButton;
 import citro.backend.CitroTween;
-import citro.backend.CitroEase;
+import citro.backend.CitroTween.CitroEase;
 import deltarune.Controls;
 import deltarune.Game;
+import deltarune.game.states.substates.Credits;
+import deltarune.game.states.substates.Options;
 
 class MenuState extends CitroState
 {

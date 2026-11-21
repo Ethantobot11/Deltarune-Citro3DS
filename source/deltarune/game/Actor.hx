@@ -1,5 +1,5 @@
 package deltarune.game;
 
-import flixel.FlxSprite;
+import citro.object.CitroSprite;
 
 class Actor extends citro.object.CitroSprite {}

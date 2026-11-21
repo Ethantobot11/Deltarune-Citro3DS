@@ -1,6 +1,6 @@
 package deltarune.game.objects;
 
-import flixel.FlxObject;
+import citro.object.CitroObject;
 
 import deltarune.game.states.PlayState;
 
@@ -11,7 +11,7 @@ class WarpPoint extends InteractableSprite
 		super(X, Y);
 		//autoTriggered = true;
         visible = false;
-		interactionHitbox = new FlxObject(X, Y, WIDTH, HEIGHT);
+		interactionHitbox = new CitroObject(X, Y, WIDTH, HEIGHT);
 		trace('height:' + (HEIGHT));
 	}
 

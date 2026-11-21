@@ -1,29 +1,10 @@
 package deltarune.game;
 
-import deltarune.assets.GameAssets;
-import deltarune.assets.Paths;
-import deltarune.game.states.PlayState;
-import citro.object.CitroSprite;
+import citro.CitroG;
 import citro.object.CitroGroup;
+import citro.object.CitroSprite;
 import citro.object.CitroTypeText;
-
-typedef DialogueStructure =
-{
-	var style:String;
-	var dialogue:Array<DialogueLine>;
-}
-
-typedef DialogueLine =
-{
-	var portrait:String;
-	var text:String;
-	var speed:Float;
-	var pausespeed:Float;
-	var autocontinue:Bool;
-	var skippable:Bool;
-}
-
-typedef DialogueFile = OneOfTwo<DialogueStructure, String>;
+import deltarune.game.DialogueData;
 
 class LegacyDialogueBox extends CitroGroup
 {
@@ -35,11 +16,12 @@ class LegacyDialogueBox extends CitroGroup
 	private var portrait:CitroSprite;
 	private var typeText:CitroTypeText;
 
-	private var niceDialogue:Dynamic;
+	public var niceDialogue:DialogueStructure;
 	public var dialogueIndex:Int;
+
 	private var linefinished:Bool;
 
-	public function new(x:Float, y:Float, dialogueFile:String)
+	public function new(x:Float, y:Float, dialogueFile:Dynamic)
 	{
 		super();
 		this.x = x;
@@ -56,11 +38,20 @@ class LegacyDialogueBox extends CitroGroup
 		portrait.scale.y = 2;
 		add(portrait);
 
-		typeText = new CitroTypeText(52, 24, 496, "");
+		typeText = new CitroTypeText(52, 24, "");
 		typeText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 		add(typeText);
 
-		niceDialogue = haxe.Json.parse(sys.io.File.getContent('romfs:/$dialogueFile'));
+		if (Std.isOfType(dialogueFile, String))
+		{
+			var jsonStr = sys.io.File.getContent(Std.string(dialogueFile));
+			niceDialogue = haxe.Json.parse(jsonStr);
+		}
+		else
+		{
+			niceDialogue = dialogueFile;
+		}
+
 		dialogueIndex = -1;
 		continueDialogue();
 	}
@@ -97,9 +88,7 @@ class LegacyDialogueBox extends CitroGroup
 	{
 		linefinished = true;
 		if (niceDialogue.dialogue[dialogueIndex].autocontinue)
-		{
 			continueDialogue();
-		}
 	}
 
 	override public function update():Bool
@@ -107,14 +96,15 @@ class LegacyDialogueBox extends CitroGroup
 		if (activated)
 		{
 			if (Controls.primary.justPressed && linefinished)
-			{
 				continueDialogue();
-			}
 			if (Controls.primary.justPressed && !linefinished)
-			{
 				typeText.skip();
-			}
 		}
 		return super.update();
+	}
+
+	public inline function getCurrentLine():DialogueLine
+	{
+		return niceDialogue.dialogue[dialogueIndex];
 	}
 }

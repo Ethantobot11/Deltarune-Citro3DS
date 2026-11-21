@@ -108,7 +108,7 @@ class CrashHandler
 
 			try
 			{
-				var menuState = fallbackState != null ? fallbackState : new MenuState();
+				var menuState:CitroState = fallbackState != null ? fallbackState : new MenuState();
 				CitroG.switchState(menuState);
 			}
 			catch (switchErr:Dynamic)

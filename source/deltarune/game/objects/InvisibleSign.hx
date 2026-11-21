@@ -1,7 +1,7 @@
 package deltarune.game.objects;
 
 import deltarune.game.states.PlayState;
-import flixel.FlxObject;
+import citro.object.CitroObject;
 
 /**
  * An Object that when interacted with opens a dialouge box
@@ -11,7 +11,7 @@ class InvisibleSign extends InteractableSprite
 	public function new(X:Float, Y:Float, WIDTH:Float, HEIGHT:Float)
 	{
 		super(X, Y);
-		interactionHitbox = new FlxObject(X, Y, 10 * WIDTH, 10 * HEIGHT);
+		interactionHitbox = new CitroObject(X, Y, 10 * WIDTH, 10 * HEIGHT);
 	}
 
 	override public function update(elapsed:Float)

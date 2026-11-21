@@ -1,7 +1,7 @@
 package deltarune.game;
 
-import flixel.addons.editors.tiled.*;
+import citro.obeject.CitroTiledMap;
 
-class TiledRoom extends TiledMap {
+class TiledRoom extends CitroTiledMap {
     
 }

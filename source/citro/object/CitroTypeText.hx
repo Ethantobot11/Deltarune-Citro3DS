@@ -1,4 +1,4 @@
-package source.citro.object;
+package citro.object;
 
 import citro.object.CitroText;
 import citro.backend.CitroColor;

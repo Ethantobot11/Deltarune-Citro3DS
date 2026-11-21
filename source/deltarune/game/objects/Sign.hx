@@ -3,14 +3,14 @@ package deltarune.game.objects;
 import deltarune.assets.GameAssets;
 import deltarune.assets.Paths;
 import deltarune.game.states.PlayState;
-import flixel.FlxObject;
+import citro.object.CitroObject;
 
 class Sign extends InteractableSprite
 {
 	public function new(X:Float, Y:Float)
 	{
 		super(X - 10, Y - 10);
-		interactionHitbox = new FlxObject(X - 2, Y - 2, 44, 44);
+		interactionHitbox = new CitroObject(X - 2, Y - 2, 44, 44);
 		loadGraphic(GameAssets.bitmap(Paths.getImage('commonObjects')), true, 20, 20);
 		animation.add('sign', [8], 1, true);
 		animation.play('sign');
