@@ -23,16 +23,9 @@ class ChapterSelectState extends CitroState
 	public var chapterData:Array<ChapterFile> = [];
 	static function sanitizeJson(raw:String):String
 	{
-		if (raw == null) return "";
-		if (raw.charCodeAt(0) == 0xFEFF) raw = raw.substr(1);
-		var buf = new StringBuf();
-		for (i in 0...raw.length) {
-			var code = raw.charCodeAt(i);
-			if (code >= 32 || code == 9 || code == 10 || code == 13) {
-				buf.addChar(code);
-			}
-		}
-		return buf.toString();
+	    if (raw == null) return "";
+	    if (raw.length > 0 && raw.charCodeAt(0) == 0xFEFF) return raw.substr(1);
+	    return raw;
 	}
 
 	override public function create()
