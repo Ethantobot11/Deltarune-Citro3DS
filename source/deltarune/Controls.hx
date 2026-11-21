@@ -12,7 +12,7 @@ import cpp.UInt32;
 using StringTools;
 
 typedef HIDKeys = Array<UInt32>;
-
+@:headerInclude("3ds.h")
 class Controls
 {
 	public static var primary(default, never):DigitalButton = new DigitalButton([HIDKey.A, HIDKey.START], [HIDKey.A]);
@@ -89,7 +89,7 @@ class Controls
 		});
 	}
 }
-
+@:headerInclude("3ds.h")
 class DigitalButton
 {
 	public var pressed(get, never):Bool;
