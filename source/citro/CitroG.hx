@@ -88,6 +88,12 @@ class CitroG {
 	public static var caches:CitroCache = new CitroCache();
 
 	/**
+	 * A global overlay object (like GameFps) that persists across state switches 
+	 * and renders on top of everything, similar to OpenFL's stage children.
+	 */
+	public static var globalOverlay:citro.object.CitroObject;
+
+	/**
      * Global sound manager, similar to FlxG.sound in HaxeFlixel.
      * Use this to load and play sounds globally.
      * Example: CitroG.sound.play("romfs:/assets/sounds/select.cwav");
