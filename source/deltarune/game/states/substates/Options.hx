@@ -183,45 +183,32 @@ class Options extends CitroSubState
 	override public function create()
 	{
 		super.create();
+        var bg = new CitroSprite(0, 0);
+        bg.makeGraphic(400, 240, 0xFF000000);
+        add(bg);
 
 		returning = false;
 		entering = true;
 
-		if (MenuState.instance != null)
-		{
-			if (MenuState.instance.playButton != null)
-				CitroTween.tween(MenuState.instance.playButton, {alpha: 0}, 0.5);
-			if (MenuState.instance.credsButton != null)
-				CitroTween.tween(MenuState.instance.credsButton, {alpha: 0}, 0.5);
-			if (MenuState.instance.optButton != null)
-				CitroTween.tween(MenuState.instance.optButton, {alpha: 0}, 0.5);
+		if (MenuState.instance != null) {
+			if (MenuState.instance.playButton != null) CitroTween.tween(MenuState.instance.playButton, {alpha: 0}, 0.5);
+			if (MenuState.instance.credsButton != null) CitroTween.tween(MenuState.instance.credsButton, {alpha: 0}, 0.5);
+			if (MenuState.instance.optButton != null) CitroTween.tween(MenuState.instance.optButton, {alpha: 0}, 0.5);
 		}
 
 		CitroTimer.start(0.5, postCreate);
 
 		var maxFpsOption = new Option(options.length, 'FPS', generalData.fps, 'fps', 'int', {
-			change: 5,
-			min: 30,
-			max: 60,
-			change_func: function(value, change)
-			{
-				Options.setGeneralData('fps', value);
-				//CitroG.setFPS(value);
-			},
-			current: false
+			change: 5, min: 30, max: 60, change_func: function(value, change) { Options.setGeneralData('fps', value); }, current: false
 		});
-		options.push(maxFpsOption);
-		add(maxFpsOption);
+		options.push(maxFpsOption); add(maxFpsOption);
 
 		var showFramerateOption = new Option(options.length, 'Show Fps?', generalData.show_fps, 'show_fps', 'bool', {current: false});
-		options.push(showFramerateOption);
-		add(showFramerateOption);
+		options.push(showFramerateOption); add(showFramerateOption);
 
 		var showMemOption = new Option(options.length, 'Show Memory?', generalData.show_memory, 'show_memory', 'bool', {current: false});
-		options.push(showMemOption);
-		add(showMemOption);
+		options.push(showMemOption); add(showMemOption);
 
-		//bgColor = 0x00000000;
 		changeIndex();
 	}
 
@@ -289,14 +276,11 @@ class Option extends CitroText
 	public var optIndex:Int;
 	public var optLabel:String;
 	public var value:Dynamic;
-
-	var field:String;
-	var type:String;
-	var properties:OptionConfig;
+	var field:String; var type:String; var properties:OptionConfig;
 
 	public function new(idx:Int, text:String, value:Dynamic, field:String, type:String, ?properties:OptionConfig)
 	{
-		super((CitroG.WIDTH) - (160 + 10), (idx * 30) + 20, text);
+		super(390, 20 + (idx * 30), text);
 		loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 
 		alignment = RIGHT;
