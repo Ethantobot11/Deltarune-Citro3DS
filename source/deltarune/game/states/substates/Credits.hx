@@ -15,7 +15,6 @@ class Credits extends CitroSubState
 	var debugMode:CitroButton;
 	var coolCredits:CitroText;
 	var pressEsc:CitroText;
-    var bg:CitroSprite;
 
 	var returning:Bool;
 	var timeAfterPress:Float;
@@ -27,9 +26,8 @@ class Credits extends CitroSubState
 	{
 		super.create();
         
-        bg = new CitroSprite(0, 0);
-        bg.makeGraphic(400, 240, 0xFF000000);
-        add(bg);
+       var bg = new MenuBackground();
+		add(bg);
 
 		returning = false;
 		var coolText = GameAssets.text('romfs:/assets/data/credits/Chapter 1.txt');
