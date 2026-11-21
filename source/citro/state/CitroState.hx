@@ -15,7 +15,7 @@ class CitroState {
 
     public function update(delta:Int) {
         for (member in members) {
-            member.update(delta);
+            member.update();
         }
     }
 

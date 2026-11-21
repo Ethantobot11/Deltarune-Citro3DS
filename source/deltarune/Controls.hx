@@ -4,7 +4,7 @@ import citro.CitroG;
 import citro.object.CitroSprite;
 import citro.backend.CitroTween;
 import citro.backend.CitroTimer;
-import citro.backend.CitroEase;
+import citro.backend.CitroTween.CitroEase;
 import haxe3ds.services.HID;
 import haxe3ds.services.HID.HIDKey;
 import cpp.UInt32;

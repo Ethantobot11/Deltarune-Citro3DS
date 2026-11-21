@@ -1,6 +1,7 @@
 package;
 
 import citro.CitroGame;
+import deltarune.CrashHandler;
 import deltarune.Game;
 import deltarune.Controls;
 import deltarune.GameFps;
@@ -12,6 +13,7 @@ class Main
 {
 	public function new()
 	{
+		CrashHandler.init();
 		#if sys
 		Game.consoleArguments = Sys.args();
 		Game.enviromentVariables = Sys.environment();

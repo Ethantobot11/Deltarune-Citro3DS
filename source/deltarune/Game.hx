@@ -1,9 +1,9 @@
 package deltarune;
 
-import deltarune.game.Chapter;
-//import deltarune.data.LocalSave;
+import deltarune.data.Chapter;
+import deltarune.tools.LocalSave;
 import citro.CitroSave;
-import deltarune.data.Options;
+import deltarune.game.states.substates.Options;
 class Game
 {
 	public static var consoleArguments:Array<String>;
@@ -26,13 +26,13 @@ class Game
 
 		Game.border.switchTo();
 
-		globalSave = new CitroSave();
+		globalSave = new LocalSave();
 		globalSave.bind('_default', 'savedata/global');
 
-		chapterSave = new CitroSave();
+		chapterSave = new LocalSave();
 		chapterSave.bind('placeholder_save', 'savedata');
 
-		// Options.initialize();
+		Options.initialize();
 
 		initialized = true;
 	}
