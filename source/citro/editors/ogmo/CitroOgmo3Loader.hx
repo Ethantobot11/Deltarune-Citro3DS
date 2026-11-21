@@ -20,20 +20,14 @@ class CitroOgmo3Loader {
 
         #if sys
         try {
-            trace("[CitroOgmo3Loader] Checking project path: " + projectDataPath);
             if (FileSystem.exists(projectDataPath)) {
-                trace("[CitroOgmo3Loader] Reading project file...");
                 rawProjectText = File.getContent(projectDataPath);
-                trace("[CitroOgmo3Loader] Project file read successfully. Length: " + rawProjectText.length);
             } else {
                 trace("Warning: Project file does not exist at: " + projectDataPath);
             }
             
-            trace("[CitroOgmo3Loader] Checking level path: " + levelDataPath);
             if (FileSystem.exists(levelDataPath)) {
-                trace("[CitroOgmo3Loader] Reading level file...");
                 rawLevelText = File.getContent(levelDataPath);
-                trace("[CitroOgmo3Loader] Level file read successfully. Length: " + rawLevelText.length);
             } else {
                 trace("Warning: Level file does not exist at: " + levelDataPath);
             }
@@ -43,10 +37,9 @@ class CitroOgmo3Loader {
         #end
 
         trace("[CitroOgmo3Loader] Sanitizing JSON...");
-        var projectText = sanitizeJson(rawProjectText);
-        var levelText = sanitizeJson(rawLevelText);
+        var projectText = sanitizeBom(rawProjectText);
+        var levelText = sanitizeBom(rawLevelText);
         trace("[CitroOgmo3Loader] Sanitization done.");
-
         if (projectText.length > 0) {
             try { 
                 trace("[CitroOgmo3Loader] Parsing project JSON...");
@@ -77,6 +70,19 @@ class CitroOgmo3Loader {
         trace("[CitroOgmo3Loader] new() END");
     }
 
+    static function sanitizeBom(raw:String):String {
+        if (raw == null || raw.length == 0) return "";
+        if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
+            return raw.substr(3);
+        }
+        
+        if (raw.charCodeAt(0) == 0xFEFF) {
+            return raw.substr(1);
+        }
+        
+        return raw;
+    }
+
     static function getFieldTrimmed(obj:Dynamic, key:String):Dynamic {
         if (obj == null) return null;
         if (Reflect.hasField(obj, key)) return Reflect.field(obj, key);
@@ -86,27 +92,14 @@ class CitroOgmo3Loader {
         return null;
     }
 
-    static function sanitizeJson(raw:String):String {
-        if (raw == null) return "";
-        if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
-            raw = raw.substr(3);
-        } else if (raw.length > 0 && raw.charCodeAt(0) == 0xFEFF) {
-            raw = raw.substr(1);
-        }
-        
-        var buf = new StringBuf();
-        for (i in 0...raw.length) {
-            var c = raw.charCodeAt(i);
-            if (c == 9 || c == 10 || c == 13 || (c >= 32 && c <= 126)) {
-                buf.addChar(c);
-            }
-        }
-        return buf.toString();
-    }
-
     public function loadTilemap(tileGraphic:String, tileLayer:String = "tiles", tileSize:Int = 16):CitroTilemap {
         trace("[CitroOgmo3Loader] loadTilemap() START");
         trace("[CitroOgmo3Loader] Getting tile layer: " + tileLayer);
+        if (level == null || !Reflect.hasField(level, "layers")) {
+            trace("Critical Error: Level data is empty or missing layers!");
+            return new CitroTilemap(0, 0, tileSize);
+        }
+
         var layer = getTileLayer(level, tileLayer);
         if (layer == null) {
             trace("Warning: Tile layer '" + tileLayer + "' not found.");
