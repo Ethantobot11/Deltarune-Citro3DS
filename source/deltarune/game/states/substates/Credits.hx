@@ -7,6 +7,7 @@ import citro.object.CitroSprite;
 import citro.backend.CitroTween;
 import citro.CitroG;
 import deltarune.assets.GameAssets;
+import deltarune.assets.Paths;
 import deltarune.game.MenuBackground;
 import deltarune.Controls;
 import deltarune.Game;
@@ -26,8 +27,10 @@ class Credits extends CitroSubState
 	override public function create()
 	{
 		super.create();
+
+		CitroG.sound.playMusic(GameAssets.music(Paths.getMusic('Before the Story')), 0.8, true);
         
-       var bg = new MenuBackground();
+       	var bg = new MenuBackground();
 		add(bg);
 
 		returning = false;
