@@ -74,4 +74,16 @@ class GameAssets
 		}
 		return files;
 	}
+
+	public static function getJSON(file:String):Dynamic
+	{
+	    var content = text(file);
+	    if (content == null) return null;
+	    try {
+	        return haxe.Json.parse(content);
+	    } catch (e:Dynamic) {
+	        trace('Failed to parse JSON: $file - $e');
+	        return null;
+	    }
+	}
 }
