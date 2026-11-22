@@ -119,7 +119,15 @@ class LegacyDialogueBox extends CitroGroup
 				return;
 			}
 			typeText.resetText(line.text);
-			typeText.start((line.speed != null ? line.speed : 1) / 30, true, false, dialogueLineFinished);
+			var spd:Float = 1;
+			if (Reflect.hasField(line, "speed"))
+			{
+				var s:Dynamic = Reflect.field(line, "speed");
+				if (s != null)
+					spd = s;
+			}
+
+			typeText.start(spd / 30, true, false, dialogueLineFinished);
 		}
 	}
 

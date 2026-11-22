@@ -10,8 +10,8 @@ typedef DialogueLine =
 {
 	var portrait:String;
 	var text:String;
-	var speed:Float;
-	var pausespeed:Float;
-	var autocontinue:Bool;
-	var skippable:Bool;
+	@:optional var speed:Float;
+	@:optional var pausespeed:Float;
+	@:optional var autocontinue:Bool;
+	@:optional var skippable:Bool;
 }
