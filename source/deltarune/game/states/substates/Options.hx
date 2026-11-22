@@ -116,7 +116,6 @@ class Options extends CitroSubState
 	{
 		var isBottom = (screen == "bottom");
 		t.bottom = isBottom;
-		var W = isBottom ? CitroG.BOTTOM_WIDTH : CitroG.WIDTH;
 		var H = CitroG.HEIGHT;
 		var margin = 4;
 
@@ -127,7 +126,7 @@ class Options extends CitroSubState
 				t.y = margin + extraY;
 				t.alignment = LEFT;
 			case "top-right":
-				t.x = W - margin;
+				t.x = -margin;
 				t.y = margin + extraY;
 				t.alignment = RIGHT;
 			case "bottom-left":
@@ -135,11 +134,11 @@ class Options extends CitroSubState
 				t.y = H - 22 + extraY;
 				t.alignment = LEFT;
 			case "bottom-right":
-				t.x = W - margin;
+				t.x = -margin;
 				t.y = H - 22 + extraY;
 				t.alignment = RIGHT;
 			default:
-				t.x = W - margin;
+				t.x = -margin;
 				t.y = margin + extraY;
 				t.alignment = RIGHT;
 		}
@@ -323,7 +322,16 @@ class Options extends CitroSubState
 		add(borderOnOption);
 
 		var borderStyleOption = new Option(options.length, 'Border Style', generalData.border_style, 'border_style', 'enum', {
-			choices: ["simple", "hometown", "castle_town"],
+			choices: [
+				"default",
+				"forest",
+				"dark_castle",
+				"castle",
+				"sunset",
+				"cyber",
+				"queen_castle",
+				"queen"
+			],
 			current: false
 		});
 		options.push(borderStyleOption);

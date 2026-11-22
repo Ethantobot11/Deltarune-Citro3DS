@@ -1,20 +1,21 @@
 package deltarune.game.states;
 
 import citro.CitroG;
-import citro.state.CitroState;
-import citro.object.CitroTilemap;
-import citro.object.CitroGroup;
 import citro.editors.ogmo.CitroOgmo3Loader;
-import deltarune.game.Player;
-import deltarune.game.LegacyDialogueBox;
-import deltarune.game.objects.InteractableSprite.Sign;
-import deltarune.game.objects.InteractableSprite.InvisibleSign;
-import deltarune.game.objects.InteractableSprite.SavePoint;
-import deltarune.game.objects.InteractableSprite.WarpPoint;
-import deltarune.game.objects.InteractableSprite.CollisionObject;
-import deltarune.game.objects.*;
+import citro.object.CitroCamera;
+import citro.object.CitroGroup;
+import citro.object.CitroTilemap;
+import citro.state.CitroState;
 import deltarune.Controls;
 import deltarune.Game;
+import deltarune.game.LegacyDialogueBox;
+import deltarune.game.Player;
+import deltarune.game.objects.*;
+import deltarune.game.objects.InteractableSprite.CollisionObject;
+import deltarune.game.objects.InteractableSprite.InvisibleSign;
+import deltarune.game.objects.InteractableSprite.SavePoint;
+import deltarune.game.objects.InteractableSprite.Sign;
+import deltarune.game.objects.InteractableSprite.WarpPoint;
 
 class PlayState extends CitroState
 {
@@ -29,6 +30,8 @@ class PlayState extends CitroState
 
 	public var interactables:CitroGroup;
 	public var collisionLayer:CitroGroup;
+
+	public var camera:CitroCamera;
 
 	public var levelString:String;
 	public var warpTag:String;
@@ -56,12 +59,13 @@ class PlayState extends CitroState
 		CitroG.sound.stopMusic();
 
 		map = new CitroOgmo3Loader('romfs:/assets/data/ogmoData.ogmo', 'romfs:/assets/data/levels/level$levelString.json');
-		if (map.level == null || !Reflect.hasField(map.level, "layers")) {
+		if (map.level == null || !Reflect.hasField(map.level, "layers"))
+		{
 			trace("CRITICAL ERROR: Level data failed to parse! Check encoding.");
-			return; 
+			return;
 		}
 
-		background = map.loadTilemap("romfs:/assets/images/cyberassetsbackgounds.t3x", "background");
+		background = map.loadTilemap("romfs:/assets/images/cyberassetsbackgrounds.t3x", "background");
 		add(background);
 
 		walls = map.loadTilemap("romfs:/assets/images/cyberassetsmini.t3x", "walls");
@@ -78,7 +82,11 @@ class PlayState extends CitroState
 		add(player);
 		add(player.collider);
 		add(player.interactionCollider);
-		
+		camera = new CitroCamera();
+		camera.follow(player, true);
+		camera.lerp = 0.1;
+		add(camera);
+
 		map.loadEntities(function(entity:Dynamic)
 		{
 			switch (entity.name)
@@ -160,7 +168,7 @@ class PlayState extends CitroState
 		if (!doingTheQuit && quitTimer >= quitLength)
 		{
 			doingTheQuit = true;
-			CitroG.switchState(new MenuState());
+			CitroG.switchState(new TransitionState(() -> new MenuState()));
 		}
 
 		resolveCollision(player.collider, collisionLayer);

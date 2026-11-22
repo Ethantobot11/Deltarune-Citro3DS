@@ -42,6 +42,15 @@ class MenuState extends CitroState
 		if (!leaving) { leaving = true; CitroG.switchState(new TransitionState(() -> new ChapterSelectState())); }
     }
 
+    override public function update(delta:Int) {
+        super.update(delta);
+		if (Controls.back.justPressed)
+		{
+            CitroG.sound.stopMusic();
+            CitroG.switchState(new TransitionState(() -> new IntroState()));
+        }
+    }
+
     public function exitCredits() {
         CitroG.substate = null;
         playButton.alpha = 1; credsButton.alpha = 1; optButton.alpha = 1;

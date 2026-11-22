@@ -98,6 +98,12 @@ class SaveSelectState extends CitroState
 			refreshSlots();
 		}
 
+		if (Controls.back.justPressed)
+		{
+			CitroG.sound.stopMusic();
+			CitroG.switchState(new TransitionState(() -> new ChapterSelectState()));
+		}
+
 		if (Controls.primary.justPressed)
 		{
 			CitroG.sound.play('romfs:/assets/sounds/select.cwav');

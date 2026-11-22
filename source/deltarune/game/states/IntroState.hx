@@ -15,6 +15,7 @@ class IntroState extends CitroState
 	override public function create()
 	{
 		super.create();
+		CitroG.sound.playMusic('romfs:/assets/music/DRONE.cwav', 0.8, true);
 		background = new CitroSprite(0, 0);
 		background.loadGraphic('romfs:/assets/images/intro_cutscene/intro_background.t3x');
 		background.scale.x = 2.5;
@@ -28,6 +29,11 @@ class IntroState extends CitroState
 	override public function update(delta:Int)
 	{
 		super.update(delta);
+		if (Controls.back.justPressed)
+		{
+			CitroG.sound.stopMusic();
+			CitroG.exitGame();
+		}
 		final elapsed = delta / 1000.0;
 		pulseTime += elapsed;
 		var pulse = 1.0 + (Math.sin(pulseTime * 2.0) * 0.05);
@@ -41,6 +47,7 @@ class IntroState extends CitroState
 		if (leaving)
 			return;
 		leaving = true;
+		CitroG.sound.stopMusic();
 		CitroG.switchState(new TransitionState(() -> new MenuState()));
 	}
 }

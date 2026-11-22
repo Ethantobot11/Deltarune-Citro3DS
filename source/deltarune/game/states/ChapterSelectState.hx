@@ -165,6 +165,14 @@ class ChapterSelectState extends CitroState
 			setSelection(currentSelection == chapterLabels.length - 1 ? -1 : currentSelection + 1);
 		}
 
+		
+
+		if (Controls.back.justPressed)
+		{
+			CitroG.sound.stopMusic();
+			CitroG.switchState(new TransitionState(() -> new MenuState()));
+		}
+
 		if (Controls.primary.justPressed) {
 			if (currentSelection == -1) {
 				CitroG.exitGame();
