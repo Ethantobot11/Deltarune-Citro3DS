@@ -61,10 +61,10 @@ class PlayState extends CitroState
 			return; 
 		}
 
-		background = map.loadTilemap("romfs:/assets/images/cyberassetsbackgounds.t3x", "background", 16);
+		background = map.loadTilemap("romfs:/assets/images/cyberassetsbackgounds.t3x", "background");
 		add(background);
 
-		walls = map.loadTilemap("romfs:/assets/images/cyberassetsmini.t3x", "walls", 16);
+		walls = map.loadTilemap("romfs:/assets/images/cyberassetsmini.t3x", "walls");
 		add(walls);
 
 		interactables = new CitroGroup();
