@@ -10,6 +10,7 @@ class CitroTilemap extends CitroObject {
     public var data:Array<Array<Int>>;
     private var brush:CitroSprite;
     public var skipEmptyIndex:Bool = true;
+    private var graphicLoaded:Bool = false;
     public var camera:CitroCamera;
     public function new(WidthInTiles:Int, HeightInTiles:Int, TileSize:Int) {
         super();
@@ -31,10 +32,38 @@ class CitroTilemap extends CitroObject {
     }
 
     public function loadGraphic(tileGraphicPath:String):Bool {
-        if (!brush.loadGraphic(tileGraphicPath, tileSize, tileSize)) {
-            trace("[CitroTilemap] FAILED TO LOAD T3X!");
+        #if sys
+        if (!sys.FileSystem.exists(tileGraphicPath)) {
+            trace("[CitroTilemap] T3X MISSING: " + tileGraphicPath);
+            graphicLoaded = false;
             return false;
         }
+        var bytes = sys.io.File.getBytes(tileGraphicPath);
+        if (bytes.length < 4) {
+            trace("[CitroTilemap] T3X EMPTY/CORRUPT (" + bytes.length + " bytes): " + tileGraphicPath);
+            graphicLoaded = false;
+            return false;
+        }
+        var m0 = bytes.get(0), m1 = bytes.get(1), m2 = bytes.get(2), m3 = bytes.get(3);
+        trace('[CitroTilemap] magic: ${m0},${m1},${m2},${m3} size=${bytes.length}');
+        if (m0 == '1'.code && m1 == '1'.code && m2 == 'L'.code && m3 == 'Z'.code) {
+            trace("[CitroTilemap] T3X IS LZ11-COMPRESSED -> your citro2d C2D_SpriteSheetLoad can't read it. Re-export uncompressed!");
+            graphicLoaded = false;
+            return false;
+        }
+        if (m0 != 'T'.code || m1 != '3'.code || m2 != 'X'.code || m3 != '0'.code) {
+            trace("[CitroTilemap] NOT A VALID T3X (expected T3X0 header). Re-export!");
+            graphicLoaded = false;
+            return false;
+        }
+        #end
+    
+        if (!brush.loadGraphic(tileGraphicPath, tileSize, tileSize)) {
+            trace("[CitroTilemap] FAILED TO LOAD T3X! (C2D_SpriteSheetLoad returned NULL)");
+            graphicLoaded = false;
+            return false;
+        }
+        graphicLoaded = true;
         return true;
     }
 
@@ -96,7 +125,7 @@ class CitroTilemap extends CitroObject {
     }
 
     override public function update():Bool {
-        if (!visible || alpha <= 0 || brush == null) return false;
+        if (!visible || alpha <= 0 || brush == null || !graphicLoaded) return false;
         if (widthInTiles <= 0 || heightInTiles <= 0 || data.length == 0) return false;
         var framesPerRow:Int = Std.int(brush.sheetWidth / tileSize);
         var maxTiles:Int = framesPerRow * Std.int(brush.sheetHeight / tileSize);
