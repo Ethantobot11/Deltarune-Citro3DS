@@ -31,9 +31,8 @@ class Main
 		Game.framerateDisplay = new GameFps();
 		CitroG.globalOverlay = Game.framerateDisplay;
 		Options.applyDisplaySettings();
-		Options.applyBorderSettings()();
-		Game.border = new ConsoleBorder();
-		CitroG.globalOverlay2 = Game.border; 
+		Options.applyBorderSettings();
+		CitroG.globalOverlay2 = Game.border;
 		var initialState = new IntroState();
 		CitroGame.start(initialState);
 	}
