@@ -18,6 +18,7 @@ class MenuState extends CitroState
     public var optButton:CitroButton;
     private var coolBG:MenuBackground;
     private var leaving:Bool = false;
+	private var inOption:Bool = false;
 
     override public function create()
     {
@@ -32,7 +33,9 @@ class MenuState extends CitroState
         playButton.bottom = true; add(playButton);
 
         credsButton = new CitroButton(80, 100, 160, 40, "Credits", function() { if (!leaving) openSubstate(new Credits()); });
-        credsButton.bottom = true; add(credsButton);
+        credsButton.bottom = true;
+		inOption = true;
+		add(credsButton);
 
         optButton = new CitroButton(80, 160, 160, 40, "Options", function() { if (!leaving) openSubstate(new Options()); });
         optButton.bottom = true; add(optButton);
@@ -44,7 +47,7 @@ class MenuState extends CitroState
 
     override public function update(delta:Int) {
         super.update(delta);
-		if (Controls.back.justPressed)
+		if (Controls.back.justPressed && inOption == false)
 		{
             CitroG.sound.stopMusic();
             CitroG.switchState(new TransitionState(() -> new IntroState()));
