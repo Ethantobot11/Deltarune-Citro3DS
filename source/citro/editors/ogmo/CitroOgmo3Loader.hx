@@ -71,27 +71,37 @@ class CitroOgmo3Loader {
     }
 
     static function sanitizeJson(raw:String):String {
-        if (raw == null || raw.length == 0) return "";
-        if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
-            raw = raw.substr(3);
-        } 
-        
-        else if (raw.length > 0 && raw.charCodeAt(0) == 0xFEFF) {
-            raw = raw.substr(1);
-        }
-        
-        raw = raw.split("\x00").join("");
-        var buf = new StringBuf();
-        for (i in 0...raw.length) {
-            var c = raw.charCodeAt(i);
-            if (c == 65533) continue;
-            if (c == 9 || c == 10 || c == 13 || c >= 32) {
-                buf.addChar(c);
-            }
-        }
-        
-        return buf.toString();
-    }
+	    if (raw == null || raw.length == 0) return "";
+	    if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
+	        raw = raw.substr(3);
+	    } else if (raw.length >= 2 && raw.charCodeAt(0) == 0xFF && raw.charCodeAt(1) == 0xFE) {
+	        raw = raw.substr(2);
+	    } else if (raw.length > 0 && (raw.charCodeAt(0) == 0xFEFF || raw.charCodeAt(0) == 0xFFFE)) {
+	        raw = raw.substr(1);
+	    }
+	
+	    var buf = new StringBuf();
+	    for (i in 0...raw.length) {
+	        var c = raw.charCodeAt(i);
+	        if (c == 9 || c == 10 || c == 13) { buf.addChar(c); continue; }
+	        if (c == 0 || c == 65533 || c == 0xFFFE) continue;
+	        if (c >= 32) buf.addChar(c);
+	    }
+	    raw = buf.toString();
+	    var first = -1, firstChar = 0;
+	    for (i in 0...raw.length) {
+	        var c = raw.charCodeAt(i);
+	        if (c == '{'.code || c == '['.code) { first = i; firstChar = c; break; }
+	    }
+	    if (first < 0) return raw;
+	    var last = -1;
+	    for (i in raw.length - 1...first) {
+	        var c = raw.charCodeAt(i);
+	        if ((firstChar == '{'.code && c == '}'.code) || (firstChar == '['.code && c == ']'.code)) { last = i; break; }
+	    }
+	    if (last < 0) return raw;
+	    return raw.substr(first, last - first + 1);
+	}
 
     static function getFieldTrimmed(obj:Dynamic, key:String):Dynamic {
         if (obj == null) return null;
