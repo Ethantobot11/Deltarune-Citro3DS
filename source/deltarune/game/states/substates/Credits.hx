@@ -19,7 +19,7 @@ class Credits extends CitroSubState
 	var pressEsc:CitroText;
 
 	var returning:Bool;
-	var timeAfterPress:Float;
+	var timeAfterPress:Float = 0;
 	var maxScrollPower:Float = 60;
 	var scrollY:Float = 0;
 	var baseCreditsY:Float = 240;
@@ -34,7 +34,7 @@ class Credits extends CitroSubState
 		add(bg);
 
 		returning = false;
-		var coolText = GameAssets.text('romfs:/assets/data/credits/Chapter 1.txt');
+		var coolText = GameAssets.text('data/credits/Chapter 1.txt');
 
 		coolCredits = new CitroText(8, baseCreditsY, "");
 		coolCredits.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
@@ -81,7 +81,7 @@ class Credits extends CitroSubState
 		if (timeAfterPress > 1.5 && !returning) {
 			scrollY += (maxScrollPower - scrollY) * elapsed;
 			coolCredits.y -= scrollY * elapsed;
-			if (debugMode != null) debugMode.y -= scrollY * elapsed;
+			//if (debugMode != null) debugMode.y -= scrollY * elapsed;
 		}
 
 		if (!returning) {
@@ -97,12 +97,12 @@ class Credits extends CitroSubState
 			if (Controls.up.pressed) {
 				timeAfterPress = 0; scrollY = 0;
 				coolCredits.y -= 300 * elapsed;
-				if (debugMode != null) debugMode.y -= 300 * elapsed;
+				//if (debugMode != null) debugMode.y -= 300 * elapsed;
 			}
 			if (Controls.down.pressed) {
 				timeAfterPress = 0; scrollY = 0;
 				coolCredits.y += 300 * elapsed;
-				if (debugMode != null) debugMode.y += 300 * elapsed;
+				//if (debugMode != null) debugMode.y += 300 * elapsed;
 			}
 
 			var bottomLimit = (baseCreditsY + coolCredits.height) - CitroG.HEIGHT;
@@ -110,7 +110,5 @@ class Credits extends CitroSubState
 			if (coolCredits.y > 0) coolCredits.y = 0;
 		}
 		pressEsc.y = 200;
-
-		super.update(delta);
 	}
 }

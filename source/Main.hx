@@ -10,6 +10,7 @@ import deltarune.ConsoleBorder;
 import deltarune.assets.GameAssets;
 import deltarune.assets.SysAssetSystem;
 import deltarune.game.states.MenuState;
+import deltarune.game.states.substates.Options;
 
 class Main
 {
@@ -28,8 +29,8 @@ class Main
 		Game.initialize();
 		Controls.addControllerToast();
 		Game.framerateDisplay = new GameFps();
-		Game.framerateDisplay.bottom = true;
 		CitroG.globalOverlay = Game.framerateDisplay;
+		Options.applyDisplaySettings();
 		var initialState = new MenuState();
 		CitroGame.start(initialState);
 	}

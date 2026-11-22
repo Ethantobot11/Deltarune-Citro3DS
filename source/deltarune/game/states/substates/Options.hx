@@ -27,7 +27,9 @@ class Options extends CitroSubState
 		show_memory: false,
 		auto_run: false,
 		music_volume: 1.0,
-		sound_volume: 1.0
+		sound_volume: 1.0,
+		display_screen: "top",
+		display_pos: "top-right"
 	};
 
 	public static var currentData:Dynamic = {
@@ -48,14 +50,17 @@ class Options extends CitroSubState
 		room_y: 0
 	};
 
-	private static function defaultGeneral():Dynamic return {
-		fps: 30,
-		show_fps: false,
-		show_memory: false,
-		auto_run: false,
-		music_volume: 1.0,
-		sound_volume: 1.0
-	};
+	private static function defaultGeneral():Dynamic
+		return {
+			fps: 30,
+			show_fps: false,
+			show_memory: false,
+			auto_run: false,
+			music_volume: 1.0,
+			sound_volume: 1.0,
+			display_screen: "top",
+			display_pos: "top-right"
+		};
 
 	public static var save_destination:String;
 	public static var save_id:Int;
@@ -65,8 +70,10 @@ class Options extends CitroSubState
 		if (Game.globalSave != null && Game.globalSave.data.general != null)
 		{
 			var merged:Dynamic = {};
-			for (f in Reflect.fields(defaultGeneral())) Reflect.setField(merged, f, Reflect.field(defaultGeneral(), f));
-			for (f in Reflect.fields(Game.globalSave.data.general)) Reflect.setField(merged, f, Reflect.field(Game.globalSave.data.general, f));
+			for (f in Reflect.fields(defaultGeneral()))
+				Reflect.setField(merged, f, Reflect.field(defaultGeneral(), f));
+			for (f in Reflect.fields(Game.globalSave.data.general))
+				Reflect.setField(merged, f, Reflect.field(Game.globalSave.data.general, f));
 			generalData = merged;
 			Game.globalSave.data.general = generalData;
 		}
@@ -82,6 +89,55 @@ class Options extends CitroSubState
 			Game.chapterSave.data.general = defaultData;
 		if (Game.chapterSave != null)
 			currentData = Game.chapterSave.data.general;
+
+		applyDisplaySettings();
+	}
+
+	public static function applyDisplaySettings()
+	{
+		if (Game.framerateDisplay != null)
+		{
+			Game.framerateDisplay.visible = (generalData.show_fps == true);
+			positionOnScreen(Game.framerateDisplay, generalData.display_screen, generalData.display_pos);
+		}
+		var mem:Dynamic = Reflect.field(Game, "memoryDisplay");
+		if (mem != null && Reflect.hasField(mem, "visible"))
+		{
+			mem.visible = (generalData.show_memory == true);
+			positionOnScreen(mem, generalData.display_screen, generalData.display_pos);
+		}
+	}
+
+	static function positionOnScreen(t:CitroText, screen:String, pos:String)
+	{
+		var isTop = (screen != "bottom");
+		t.bottom = !isTop;
+		var margin = 4;
+		var W = 400;
+		var H = 240;
+		switch (pos)
+		{
+			case "top-left":
+				t.x = margin;
+				t.y = margin;
+				t.alignment = LEFT;
+			case "top-right":
+				t.x = W - margin;
+				t.y = margin;
+				t.alignment = RIGHT;
+			case "bottom-left":
+				t.x = margin;
+				t.y = H - 22;
+				t.alignment = LEFT;
+			case "bottom-right":
+				t.x = W - margin;
+				t.y = H - 22;
+				t.alignment = RIGHT;
+			default:
+				t.x = W - margin;
+				t.y = margin;
+				t.alignment = RIGHT;
+		}
 	}
 
 	public static function loadNewSave(target_save_destination:String = null, target_save_id:Int = null)
@@ -186,6 +242,8 @@ class Options extends CitroSubState
 			if (flush)
 				Game.globalSave.flush();
 		}
+		if (field == "show_fps" || field == "show_memory" || field == "display_screen" || field == "display_pos")
+			applyDisplaySettings();
 	}
 
 	var options:Array<Option> = [];
@@ -197,35 +255,92 @@ class Options extends CitroSubState
 		super.create();
 
 		CitroG.sound.playMusic(Paths.getMusic('Before the Story'), 0.8, true);
-		
-        var bg = new MenuBackground();
+
+		var bg = new MenuBackground();
 		add(bg);
 
 		returning = false;
 		entering = true;
 
-		if (MenuState.instance != null) {
-			if (MenuState.instance.playButton != null) CitroTween.tween(MenuState.instance.playButton, {alpha: 0}, 0.5);
-			if (MenuState.instance.credsButton != null) CitroTween.tween(MenuState.instance.credsButton, {alpha: 0}, 0.5);
-			if (MenuState.instance.optButton != null) CitroTween.tween(MenuState.instance.optButton, {alpha: 0}, 0.5);
+		if (MenuState.instance != null)
+		{
+			if (MenuState.instance.playButton != null)
+				CitroTween.tween(MenuState.instance.playButton, {alpha: 0}, 0.5);
+			if (MenuState.instance.credsButton != null)
+				CitroTween.tween(MenuState.instance.credsButton, {alpha: 0}, 0.5);
+			if (MenuState.instance.optButton != null)
+				CitroTween.tween(MenuState.instance.optButton, {alpha: 0}, 0.5);
 		}
 
 		CitroTimer.start(0.5, postCreate);
+
 		var maxFpsOption = new Option(options.length, 'FPS', generalData.fps, 'fps', 'int', {
-			change: 5, min: 30, max: 60,
-			change_func: function(value, change) {
+			change: 5,
+			min: 30,
+			max: 60,
+			change_func: function(value, change)
+			{
 				Options.setGeneralData('fps', value);
 				CitroG.targetFps = (value is Int) ? value : 60;
 			},
 			current: false
 		});
-		options.push(maxFpsOption); add(maxFpsOption);
+		options.push(maxFpsOption);
+		add(maxFpsOption);
 
 		var showFramerateOption = new Option(options.length, 'Show Fps?', generalData.show_fps, 'show_fps', 'bool', {current: false});
-		options.push(showFramerateOption); add(showFramerateOption);
+		options.push(showFramerateOption);
+		add(showFramerateOption);
 
 		var showMemOption = new Option(options.length, 'Show Memory?', generalData.show_memory, 'show_memory', 'bool', {current: false});
-		options.push(showMemOption); add(showMemOption);
+		options.push(showMemOption);
+		add(showMemOption);
+
+		var screenOption = new Option(options.length, 'Display Screen', generalData.display_screen, 'display_screen', 'enum', {
+			choices: ["top", "bottom"],
+			current: false
+		});
+		options.push(screenOption);
+		add(screenOption);
+
+		var posOption = new Option(options.length, 'Display Position', generalData.display_pos, 'display_pos', 'enum', {
+			choices: ["top-left", "top-right", "bottom-left", "bottom-right"],
+			current: false
+		});
+		options.push(posOption);
+		add(posOption);
+
+		var autoRunOption = new Option(options.length, 'Auto Run', generalData.auto_run, 'auto_run', 'bool', {current: false});
+		options.push(autoRunOption);
+		add(autoRunOption);
+
+		var musicVolOption = new Option(options.length, 'Music Volume', generalData.music_volume, 'music_volume', 'float', {
+			change: 0.1,
+			min: 0.0,
+			max: 1.0,
+			change_func: function(value, change)
+			{
+				Options.setGeneralData('music_volume', value);
+				CitroG.sound.setMusicVolume(value);
+			},
+			current: false
+		});
+		options.push(musicVolOption);
+		add(musicVolOption);
+
+		var soundVolOption = new Option(options.length, 'Sound Volume', generalData.sound_volume, 'sound_volume', 'float', {
+			change: 0.1,
+			min: 0.0,
+			max: 1.0,
+			change_func: function(value, change)
+			{
+				Options.setGeneralData('sound_volume', value);
+				CitroG.sound.setSoundVolume(value);
+			},
+			current: false
+		});
+		options.push(soundVolOption);
+		add(soundVolOption);
 
 		changeIndex();
 	}
@@ -294,13 +409,16 @@ class Option extends CitroText
 	public var optIndex:Int;
 	public var optLabel:String;
 	public var value:Dynamic;
-	var field:String; var type:String; var properties:OptionConfig;
+
+	var field:String;
+	var type:String;
+	var properties:OptionConfig;
 
 	public function new(idx:Int, text:String, value:Dynamic, field:String, type:String, ?properties:OptionConfig)
 	{
 		super(-10, 20 + (idx * 30), text);
-	    loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
-	    alignment = RIGHT;
+		loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
+		alignment = RIGHT;
 		this.properties = properties;
 		this.optIndex = idx;
 		this.value = value;
@@ -314,10 +432,15 @@ class Option extends CitroText
 	{
 		switch (type)
 		{
-			case 'int', 'float':
+			case 'int':
 				text = '< ' + value + ' > - ' + optLabel;
+			case 'float':
+				var v:Float = Std.isOfType(value, Float) ? cast value : Std.parseFloat(Std.string(value));
+				text = '< ' + Std.string(Std.int(v * 10) / 10) + ' > - ' + optLabel;
 			case 'bool':
 				text = '< ' + (value ? 'Yes' : 'No') + ' > - ' + optLabel;
+			case 'enum':
+				text = '< ' + value + ' > - ' + optLabel;
 			default:
 				text = optLabel;
 		}
@@ -327,8 +450,7 @@ class Option extends CitroText
 	{
 		switch (type)
 		{
-			case 'int', 'float':
-				trace('cant select int/float directly, use left/right');
+			case 'int', 'float', 'enum':
 			case 'bool':
 				value = !value;
 				if (!properties.current)
@@ -356,7 +478,32 @@ class Option extends CitroText
 				if (!properties.current)
 					Options.setGeneralData(field, value);
 			case 'float':
-				trace('not complete');
+				if (value == null)
+					value = 0.0;
+				var v:Float = Std.isOfType(value, Float) ? cast value : Std.parseFloat(Std.string(value));
+				v += change * properties.change;
+				if (v < properties.min)
+					v = properties.min;
+				if (v > properties.max)
+					v = properties.max;
+				value = Math.round(v * 100) / 100;
+				if (!properties.current)
+					Options.setGeneralData(field, value);
+			case 'enum':
+				var choices:Array<String> = properties.choices != null ? properties.choices : [];
+				if (choices.length == 0)
+					break;
+				var cur = choices.indexOf(Std.string(value));
+				if (cur < 0)
+					cur = 0;
+				cur += change;
+				if (cur < 0)
+					cur = choices.length - 1;
+				if (cur >= choices.length)
+					cur = 0;
+				value = choices[cur];
+				if (!properties.current)
+					Options.setGeneralData(field, value);
 			case 'bool':
 				value = !value;
 				if (!properties.current)
@@ -379,6 +526,7 @@ typedef OptionConfig =
 	var ?min:Float;
 	var ?max:Float;
 	var ?current:Bool;
+	var ?choices:Array<String>;
 }
 
 enum NoSuccess

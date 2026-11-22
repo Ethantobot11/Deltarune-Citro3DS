@@ -134,8 +134,8 @@ class CitroOgmo3Loader {
             return new CitroTilemap(0, 0, tileSize);
         }
 		trace("[CitroOgmo3Loader] Tile layer found.");
-		if (tileSize <= 0) tileSize = getTilesetSize(Std.string(getFieldTrimmed(layer, "tileset")));
-    	if (tileSize <= 0) tileSize = 40;
+		if (tileSize <= 0) tileSize = getTilesetSize(this.project, Std.string(getFieldTrimmed(layer, "tileset")));
+		if (tileSize <= 0) tileSize = 40;
         trace("[CitroOgmo3Loader] Getting grid dimensions...");
         var gridCellsX:Int = Std.int(getFieldTrimmed(layer, "gridCellsX"));
         var gridCellsY:Int = Std.int(getFieldTrimmed(layer, "gridCellsY"));
@@ -217,17 +217,22 @@ class CitroOgmo3Loader {
         trace("[CitroOgmo3Loader] loadEntities() END");
     }
 
-    static function getTileLayer(data:Dynamic, name:String):Dynamic {
-        if (data == null || !Reflect.hasField(data, "layers")) return null;
-        var layers:Array<Dynamic> = cast Reflect.field(data, "layers");
-        if (layers != null) {
-            for (layer in layers) {
-                var layerName:String = Std.string(getFieldTrimmed(layer, "name"));
-                if (layerName != null && layerName.trim() == name) return layer;
-            }
-        }
-        return null;
-    }
+	static function getTilesetSize(projectData:Dynamic, label:String):Int
+	{
+		if (projectData == null || !Reflect.hasField(projectData, "tilesets"))
+			return 0;
+		var tilesets:Array<Dynamic> = cast Reflect.field(projectData, "tilesets");
+		if (tilesets == null)
+			return 0;
+		for (ts in tilesets)
+		{
+			if (Std.string(getFieldTrimmed(ts, "label")).trim() == label)
+			{
+				return Std.int(getFieldTrimmed(ts, "tileWidth"));
+			}
+		}
+		return 0;
+	}
 
 	static function getTilesetSize(label:String):Int {
 	    if (project == null || !Reflect.hasField(project, "tilesets")) return 0;
