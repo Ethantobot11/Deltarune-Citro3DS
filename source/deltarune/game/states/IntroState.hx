@@ -42,6 +42,6 @@ class IntroState extends CitroState
 		if (leaving)
 			return;
 		leaving = true;
-		CitroG.switchState(new TransitionState(new MenuState()));
+		CitroG.switchState(new TransitionState(() -> new MenuState()));
 	}
 }
