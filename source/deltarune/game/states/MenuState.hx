@@ -39,9 +39,7 @@ class MenuState extends CitroState
     }
 
     function clickPlay() {
-		if (!leaving)
-		{
-			leaving = true; /*CitroG.switchState(new PlayState());*/ /*CitroG.switchState(new ChapterSelectState());*/ CitroG.switchState(new TransitionState(() -> new ChapterSelectState())); }
+		if (!leaving) { leaving = true; CitroG.switchState(new TransitionState(() -> new ChapterSelectState())); }
     }
 
     public function exitCredits() {
