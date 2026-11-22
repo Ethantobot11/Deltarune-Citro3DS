@@ -32,13 +32,12 @@ class CitroButton extends CitroSprite
 	{
 		label.bottom = this.bottom;
 		label.alpha = this.alpha;
-		label.color = this.color;
+		label.color = 0xFFFFFFFF;
 		var res = super.update();
 		label.x = this.x + (width - label.width) / 2;
 		label.y = this.y + (height - label.height) / 2;
 		if (!label.isDestroyed)
 			label.update();
-
 		if (bottom && HID.keyHeld(HIDKey.TOUCH))
 		{
 			var t = HID.touch;
@@ -48,7 +47,6 @@ class CitroButton extends CitroSprite
 		{
 			isHovered = false;
 		}
-
 		if (isHovered && (HID.keyPressed(HIDKey.A) || HID.keyPressed(HIDKey.TOUCH)))
 		{
 			if (onClicked != null)

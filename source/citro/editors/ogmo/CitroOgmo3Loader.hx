@@ -94,7 +94,7 @@ class CitroOgmo3Loader
 		trace("[CitroOgmo3Loader] new() END");
 	}
 
-	static function sanitizeJson(raw:String):String
+	public static function sanitizeJson(raw:String):String
 	{
 		if (raw == null || raw.length == 0)
 			return "";

@@ -130,9 +130,19 @@ class PlayState extends CitroState
 			}
 		}, "collision");
 
-		dialogue = new LegacyDialogueBox(0, 0, 'romfs:/assets/data/dialogue/testDialogue.json');
-		dialogue.bottom = true;
-		add(dialogue);
+		#if sys
+		var dlgPath = 'romfs:/assets/data/dialogue/testDialogue.json';
+		if (sys.FileSystem.exists(dlgPath))
+		{
+			dialogue = new LegacyDialogueBox(0, 0, dlgPath);
+			dialogue.bottom = true;
+			add(dialogue);
+		}
+		else
+		{
+			trace("[PlayState] WARNING: testDialogue.json missing, skipping dialogue box");
+		}
+		#end
 	}
 
 	override public function update(delta:Int)

@@ -291,6 +291,11 @@ class Options extends CitroSubState
 
 		CitroTimer.start(0.5, postCreate);
 
+		var panel = new CitroSprite(0, 0);
+		panel.bottom = true;
+		panel.makeGraphic(CitroG.BOTTOM_WIDTH, CitroG.HEIGHT, 0xE6000000);
+		add(panel);
+
 		var maxFpsOption = new Option(options.length, 'FPS', generalData.fps, 'fps', 'int', {
 			change: 5,
 			min: 30,
@@ -371,11 +376,7 @@ class Options extends CitroSubState
 		add(soundVolOption);
 
 		changeIndex();
-
-		var panel = new CitroSprite(0, 0);
-		panel.bottom = true;
-		panel.makeGraphic(CitroG.BOTTOM_WIDTH, CitroG.HEIGHT, 0xE6000000);
-		add(panel);
+		updateOptionLayout();
 	}
 
 	public function postCreate()
@@ -469,10 +470,10 @@ class Option extends CitroText
 
 	public function new(idx:Int, text:String, value:Dynamic, field:String, type:String, ?properties:OptionConfig)
 	{
-		super(310, 0, text);
+		super(6, 0, text);
 		bottom = true;
 		loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
-		alignment = RIGHT;
+		alignment = LEFT;
 		this.properties = properties;
 		this.optIndex = idx;
 		this.value = value;

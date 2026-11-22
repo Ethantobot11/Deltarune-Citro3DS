@@ -4,7 +4,9 @@ import citro.CitroG;
 import citro.object.CitroGroup;
 import citro.object.CitroSprite;
 import citro.object.CitroTypeText;
+import citro.editors.ogmo.CitroOgmo3Loader;
 import deltarune.game.DialogueData;
+import deltarune.Controls;
 
 class LegacyDialogueBox extends CitroGroup
 {
@@ -44,13 +46,38 @@ class LegacyDialogueBox extends CitroGroup
 
 		if (Std.isOfType(dialogueFile, String))
 		{
-			var jsonStr = sys.io.File.getContent(Std.string(dialogueFile));
-			niceDialogue = haxe.Json.parse(jsonStr);
+			var path = Std.string(dialogueFile);
+			#if sys
+			if (!sys.FileSystem.exists(path))
+			{
+				trace("[LegacyDialogueBox] WARNING: dialogue file missing: " + path);
+				niceDialogue = {style: "darkworld", dialogue: []};
+			}
+			else
+			{
+				var jsonStr = sys.io.File.getContent(path);
+				jsonStr = CitroOgmo3Loader.sanitizeJson(jsonStr);
+				try
+				{
+					niceDialogue = haxe.Json.parse(jsonStr);
+				}
+				catch (e:Dynamic)
+				{
+					trace("[LegacyDialogueBox] ERROR: failed to parse dialogue JSON: " + path + " | " + e);
+					niceDialogue = {style: "darkworld", dialogue: []};
+				}
+			}
+			#else
+			niceDialogue = {style: "darkworld", dialogue: []};
+			#end
 		}
 		else
 		{
 			niceDialogue = dialogueFile;
 		}
+
+		if (niceDialogue.dialogue == null)
+			niceDialogue.dialogue = [];
 
 		dialogueIndex = -1;
 		continueDialogue();
@@ -65,6 +92,13 @@ class LegacyDialogueBox extends CitroGroup
 	public function continueDialogue(?reset:Bool = false)
 	{
 		linefinished = false;
+
+		if (niceDialogue.dialogue.length == 0)
+		{
+			activated = false;
+			return;
+		}
+
 		if (dialogueIndex + 1 >= niceDialogue.dialogue.length && !reset)
 		{
 			activated = false;
@@ -79,16 +113,25 @@ class LegacyDialogueBox extends CitroGroup
 				dialogueProgressedCallback(dialogueIndex);
 
 			var line = niceDialogue.dialogue[dialogueIndex];
+			if (line == null || line.text == null)
+			{
+				activated = false;
+				return;
+			}
 			typeText.resetText(line.text);
-			typeText.start(line.speed / 30, true, false, dialogueLineFinished);
+			typeText.start((line.speed != null ? line.speed : 1) / 30, true, false, dialogueLineFinished);
 		}
 	}
 
 	function dialogueLineFinished()
 	{
 		linefinished = true;
-		if (niceDialogue.dialogue[dialogueIndex].autocontinue)
-			continueDialogue();
+		if (dialogueIndex < niceDialogue.dialogue.length)
+		{
+			var line = niceDialogue.dialogue[dialogueIndex];
+			if (line != null && line.autocontinue)
+				continueDialogue();
+		}
 	}
 
 	override public function update():Bool

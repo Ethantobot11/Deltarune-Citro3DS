@@ -15,15 +15,13 @@ class IntroState extends CitroState
 	override public function create()
 	{
 		super.create();
-
 		background = new CitroSprite(0, 0);
 		background.loadGraphic('romfs:/assets/images/intro_cutscene/intro_background.t3x');
 		background.scale.x = 2.5;
 		background.scale.y = 2.5;
 		background.screenCenter(XY);
 		add(background);
-
-		playButton = new CitroButton((CitroG.WIDTH / 2) - 80, (CitroG.HEIGHT / 2) + 100, 160, 40, "BEGIN", clickPlay);
+		playButton = new CitroButton((CitroG.BOTTOM_WIDTH - 160) / 2, (CitroG.HEIGHT - 40) / 2, 160, 40, "BEGIN", clickPlay);
 		add(playButton);
 	}
 

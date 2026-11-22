@@ -82,37 +82,45 @@ class SaveSelectState extends CitroState
 	override public function update(delta:Int)
 	{
 		super.update(delta);
-		if (Game.framerateDisplay != null) Game.framerateDisplay.updateFPS(delta / 1000.0);
+		if (Game.framerateDisplay != null)
+			Game.framerateDisplay.updateFPS(delta / 1000.0);
 
-		if (Controls.up.justPressed) {
+		if (Controls.up.justPressed)
+		{
 			saveSelected = (saveSelected + 2) % 3;
-			//CitroG.sound.play('romfs:/assets/sounds/menumove.cwav');
+			CitroG.sound.play('romfs:/assets/sounds/menumove.cwav');
 			refreshSlots();
 		}
-		if (Controls.down.justPressed) {
+		if (Controls.down.justPressed)
+		{
 			saveSelected = (saveSelected + 1) % 3;
+			CitroG.sound.play('romfs:/assets/sounds/menumove.cwav');
 			refreshSlots();
 		}
 
-		if (Controls.primary.justPressed) {
+		if (Controls.primary.justPressed)
+		{
+			CitroG.sound.play('romfs:/assets/sounds/select.cwav');
 			Options.save_destination = chapterId;
 			Options.save_id = saveSelected;
 			Options.loadNewSave(chapterId, saveSelected);
-			//CitroG.sound.play('romfs:/assets/sounds/save.cwav');
+			trace('[SaveSelect] launching PlayState room=${Options.currentData.room_name}');
 			CitroG.switchState(new TransitionState(() -> new PlayState(Options.currentData.room_name)));
 		}
 
-		if (Controls.secondary.justPressed) {
+		if (Controls.secondary.justPressed)
+		{
+			CitroG.sound.play('romfs:/assets/sounds/hurt.cwav');
 			var temp = new LocalSave();
 			temp.bind('${chapterId}_${saveSelected}', 'savedata');
 			temp.erase();
 			refreshSlots();
 		}
 
-		if (Controls.back.justPressed) {
-			//CitroG.sound.play('romfs:/assets/sounds/hurt.cwav');
+		if (Controls.back.justPressed)
+		{
+			CitroG.sound.play('romfs:/assets/sounds/hurt.cwav');
 			CitroG.switchState(new ChapterSelectState());
 		}
-		CitroG.sound.play('romfs:/assets/sounds/menumove.cwav');
 	}
 }
