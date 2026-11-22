@@ -23,12 +23,12 @@ class Options extends CitroSubState
 
 	public static var generalData:Dynamic = {
 		fps: 30,
-		show_fps: false,
-		show_memory: false,
+		show_fps: true,
+		show_memory: true,
 		auto_run: false,
 		music_volume: 1.0,
 		sound_volume: 1.0,
-		display_screen: "top",
+		display_screen: "bottom",
 		display_pos: "top-right"
 	};
 
@@ -53,12 +53,12 @@ class Options extends CitroSubState
 	private static function defaultGeneral():Dynamic
 		return {
 			fps: 30,
-			show_fps: false,
-			show_memory: false,
+			show_fps: true,
+			show_memory: true,
 			auto_run: false,
 			music_volume: 1.0,
 			sound_volume: 1.0,
-			display_screen: "top",
+			display_screen: "bottom",
 			display_pos: "top-right"
 		};
 
@@ -491,8 +491,7 @@ class Option extends CitroText
 					Options.setGeneralData(field, value);
 			case 'enum':
 				var choices:Array<String> = properties.choices != null ? properties.choices : [];
-				if (choices.length == 0)
-					break;
+				if (choices.length == 0) return;
 				var cur = choices.indexOf(Std.string(value));
 				if (cur < 0)
 					cur = 0;

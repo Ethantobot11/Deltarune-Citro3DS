@@ -9,213 +9,301 @@ import sys.FileSystem;
 
 using StringTools;
 
-class CitroOgmo3Loader {
-    public var project:Dynamic;
-    public var level:Dynamic;
+class CitroOgmo3Loader
+{
+	public var project:Dynamic;
+	public var level:Dynamic;
 
-    public function new(projectDataPath:String, levelDataPath:String) {
-        trace("[CitroOgmo3Loader] new() START");
-        var rawProjectText = "";
-        var rawLevelText = "";
+	public function new(projectDataPath:String, levelDataPath:String)
+	{
+		trace("[CitroOgmo3Loader] new() START");
+		var rawProjectText = "";
+		var rawLevelText = "";
 
-        #if sys
-        try {
-            if (FileSystem.exists(projectDataPath)) {
-                rawProjectText = File.getContent(projectDataPath);
-            } else {
-                trace("Warning: Project file does not exist at: " + projectDataPath);
-            }
-            
-            if (FileSystem.exists(levelDataPath)) {
-                rawLevelText = File.getContent(levelDataPath);
-            } else {
-                trace("Warning: Level file does not exist at: " + levelDataPath);
-            }
-        } catch (e:Dynamic) { 
-            trace("Error loading Ogmo files: " + e); 
-        }
-        #end
+		#if sys
+		try
+		{
+			if (FileSystem.exists(projectDataPath))
+			{
+				rawProjectText = File.getContent(projectDataPath);
+			}
+			else
+			{
+				trace("Warning: Project file does not exist at: " + projectDataPath);
+			}
 
-        trace("[CitroOgmo3Loader] Sanitizing JSON...");
-        var projectText = sanitizeJson(rawProjectText);
-        var levelText = sanitizeJson(rawLevelText);
-        trace("[CitroOgmo3Loader] Sanitization done.");
-        if (projectText.length > 0) {
-            try { 
-                trace("[CitroOgmo3Loader] Parsing project JSON...");
-                project = Json.parse(projectText); 
-                trace("[CitroOgmo3Loader] Project JSON parsed successfully.");
-            } catch (e:Dynamic) { 
-                trace("Project JSON parse error: " + e); 
-                project = {}; 
-            }
-        } else { 
-            trace("[CitroOgmo3Loader] Project text is empty.");
-            project = {}; 
-        }
+			if (FileSystem.exists(levelDataPath))
+			{
+				rawLevelText = File.getContent(levelDataPath);
+			}
+			else
+			{
+				trace("Warning: Level file does not exist at: " + levelDataPath);
+			}
+		}
+		catch (e:Dynamic)
+		{
+			trace("Error loading Ogmo files: " + e);
+		}
+		#end
 
-        if (levelText.length > 0) {
-            try { 
-                trace("[CitroOgmo3Loader] Parsing level JSON...");
-                level = Json.parse(levelText); 
-                trace("[CitroOgmo3Loader] Level JSON parsed successfully.");
-            } catch (e:Dynamic) { 
-                trace("Level JSON parse error: " + e); 
-                level = {}; 
-            }
-        } else { 
-            trace("[CitroOgmo3Loader] Level text is empty.");
-            level = {}; 
-        }
-        trace("[CitroOgmo3Loader] new() END");
-    }
+		trace("[CitroOgmo3Loader] Sanitizing JSON...");
+		var projectText = sanitizeJson(rawProjectText);
+		var levelText = sanitizeJson(rawLevelText);
+		trace("[CitroOgmo3Loader] Sanitization done.");
 
-    static function sanitizeJson(raw:String):String {
-        if (raw == null || raw.length == 0) return "";
-        if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
-            raw = raw.substr(3);
-        } else if (raw.length >= 2 && raw.charCodeAt(0) == 0xFF && raw.charCodeAt(1) == 0xFE) {
-            raw = raw.substr(2);
-        } else if (raw.length > 0 && (raw.charCodeAt(0) == 0xFEFF || raw.charCodeAt(0) == 0xFFFE)) {
-            raw = raw.substr(1);
-        }
+		if (projectText.length > 0)
+		{
+			try
+			{
+				trace("[CitroOgmo3Loader] Parsing project JSON...");
+				project = Json.parse(projectText);
+				trace("[CitroOgmo3Loader] Project JSON parsed successfully.");
+			}
+			catch (e:Dynamic)
+			{
+				trace("Project JSON parse error: " + e);
+				project = {};
+			}
+		}
+		else
+		{
+			trace("[CitroOgmo3Loader] Project text is empty.");
+			project = {};
+		}
 
-        var buf = new StringBuf();
-        for (i in 0...raw.length) {
-            var c = raw.charCodeAt(i);
-            if (c == 9 || c == 10 || c == 13) { buf.addChar(c); continue; }
-            if (c == 0 || c == 65533 || c == 0xFFFE) continue;
-            if (c >= 32) buf.addChar(c);
-        }
-        raw = buf.toString();
-        
-        var first = -1, firstChar = 0;
-        for (i in 0...raw.length) {
-            var c = raw.charCodeAt(i);
-            if (c == '{'.code || c == '['.code) { first = i; firstChar = c; break; }
-        }
-		
-        if (first < 0) return raw; 
-        var last = -1;
-        var i = raw.length - 1;
-        while (i >= first) {
-            var c = raw.charCodeAt(i);
-            if ((firstChar == '{'.code && c == '}'.code) || (firstChar == '['.code && c == ']'.code)) { 
-                last = i; 
-                break; 
-            }
-            i--;
-        }
-        if (last < 0) return raw;
-        
-        return raw.substr(first, last - first + 1);
-    }
+		if (levelText.length > 0)
+		{
+			try
+			{
+				trace("[CitroOgmo3Loader] Parsing level JSON...");
+				level = Json.parse(levelText);
+				trace("[CitroOgmo3Loader] Level JSON parsed successfully.");
+			}
+			catch (e:Dynamic)
+			{
+				trace("Level JSON parse error: " + e);
+				level = {};
+			}
+		}
+		else
+		{
+			trace("[CitroOgmo3Loader] Level text is empty.");
+			level = {};
+		}
+		trace("[CitroOgmo3Loader] new() END");
+	}
 
-    static function getFieldTrimmed(obj:Dynamic, key:String):Dynamic {
-        if (obj == null) return null;
-        if (Reflect.hasField(obj, key)) return Reflect.field(obj, key);
-        for (f in Reflect.fields(obj)) {
-            if (f.trim() == key) return Reflect.field(obj, f);
-        }
-        return null;
-    }
+	static function sanitizeJson(raw:String):String
+	{
+		if (raw == null || raw.length == 0)
+			return "";
+		if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF)
+		{
+			raw = raw.substr(3);
+		}
+		else if (raw.length >= 2 && raw.charCodeAt(0) == 0xFF && raw.charCodeAt(1) == 0xFE)
+		{
+			raw = raw.substr(2);
+		}
+		else if (raw.length > 0 && (raw.charCodeAt(0) == 0xFEFF || raw.charCodeAt(0) == 0xFFFE))
+		{
+			raw = raw.substr(1);
+		}
 
-    public function loadTilemap(tileGraphic:String, tileLayer:String = "tiles", tileSize:Int = 0):CitroTilemap {
-        trace("[CitroOgmo3Loader] loadTilemap() START");
-        trace("[CitroOgmo3Loader] Getting tile layer: " + tileLayer);
-        if (level == null || !Reflect.hasField(level, "layers")) {
-            trace("Critical Error: Level data is empty or missing layers!");
-            return new CitroTilemap(0, 0, tileSize);
-        }
+		var buf = new StringBuf();
+		for (i in 0...raw.length)
+		{
+			var c = raw.charCodeAt(i);
+			if (c == 9 || c == 10 || c == 13)
+			{
+				buf.addChar(c);
+				continue;
+			}
+			if (c == 0 || c == 65533 || c == 0xFFFE)
+				continue;
+			if (c >= 32)
+				buf.addChar(c);
+		}
+		raw = buf.toString();
 
-        var layer = getTileLayer(level, tileLayer);
-        if (layer == null) {
-            trace("Warning: Tile layer '" + tileLayer + "' not found.");
-            return new CitroTilemap(0, 0, tileSize);
-        }
+		var first = -1, firstChar = 0;
+		for (i in 0...raw.length)
+		{
+			var c = raw.charCodeAt(i);
+			if (c == '{'.code || c == '['.code)
+			{
+				first = i;
+				firstChar = c;
+				break;
+			}
+		}
+
+		if (first < 0)
+			return raw;
+		var last = -1;
+		var i = raw.length - 1;
+		while (i >= first)
+		{
+			var c = raw.charCodeAt(i);
+			if ((firstChar == '{'.code && c == '}'.code) || (firstChar == '['.code && c == ']'.code))
+			{
+				last = i;
+				break;
+			}
+			i--;
+		}
+		if (last < 0)
+			return raw;
+
+		return raw.substr(first, last - first + 1);
+	}
+
+	static function getFieldTrimmed(obj:Dynamic, key:String):Dynamic
+	{
+		if (obj == null)
+			return null;
+		if (Reflect.hasField(obj, key))
+			return Reflect.field(obj, key);
+		for (f in Reflect.fields(obj))
+		{
+			if (f.trim() == key)
+				return Reflect.field(obj, f);
+		}
+		return null;
+	}
+
+	public function loadTilemap(tileGraphic:String, tileLayer:String = "tiles", tileSize:Int = 0):CitroTilemap
+	{
+		trace("[CitroOgmo3Loader] loadTilemap() START");
+		trace("[CitroOgmo3Loader] Getting tile layer: " + tileLayer);
+		if (level == null || !Reflect.hasField(level, "layers"))
+		{
+			trace("Critical Error: Level data is empty or missing layers!");
+			return new CitroTilemap(0, 0, tileSize);
+		}
+
+		var layer = getTileLayer(level, tileLayer);
+		if (layer == null)
+		{
+			trace("Warning: Tile layer '" + tileLayer + "' not found.");
+			return new CitroTilemap(0, 0, tileSize);
+		}
 		trace("[CitroOgmo3Loader] Tile layer found.");
 		if (tileSize <= 0) tileSize = getTilesetSize(this.project, Std.string(getFieldTrimmed(layer, "tileset")));
 		if (tileSize <= 0) tileSize = 40;
-        trace("[CitroOgmo3Loader] Getting grid dimensions...");
-        var gridCellsX:Int = Std.int(getFieldTrimmed(layer, "gridCellsX"));
-        var gridCellsY:Int = Std.int(getFieldTrimmed(layer, "gridCellsY"));
-        trace("[CitroOgmo3Loader] Grid dimensions: " + gridCellsX + "x" + gridCellsY);
-        
-        trace("[CitroOgmo3Loader] Creating CitroTilemap...");
-        var tilemap = new CitroTilemap(gridCellsX, gridCellsY, tileSize);
-        trace("[CitroOgmo3Loader] CitroTilemap created.");
-        
-        trace("[CitroOgmo3Loader] Loading graphic: " + tileGraphic);
-        tilemap.loadGraphic(tileGraphic);
-        trace("[CitroOgmo3Loader] Graphic loaded.");
+		trace("[CitroOgmo3Loader] Getting grid dimensions...");
+		var gridCellsX:Int = Std.int(getFieldTrimmed(layer, "gridCellsX"));
+		var gridCellsY:Int = Std.int(getFieldTrimmed(layer, "gridCellsY"));
+		trace("[CitroOgmo3Loader] Grid dimensions: " + gridCellsX + "x" + gridCellsY);
+		trace("[CitroOgmo3Loader] Creating CitroTilemap...");
+		var tilemap = new CitroTilemap(gridCellsX, gridCellsY, tileSize);
+		trace("[CitroOgmo3Loader] CitroTilemap created.");
+		trace("[CitroOgmo3Loader] Loading graphic: " + tileGraphic);
+		tilemap.loadGraphic(tileGraphic);
+		trace("[CitroOgmo3Loader] Graphic loaded.");
+		trace("[CitroOgmo3Loader] Getting arrayMode...");
+		var arrayMode:Int = Std.int(getFieldTrimmed(layer, "arrayMode"));
+		trace("[CitroOgmo3Loader] arrayMode: " + arrayMode);
+		if (arrayMode == 0 && getFieldTrimmed(layer, "data") != null)
+		{
+			trace("[CitroOgmo3Loader] Parsing 1D data array...");
+			var data:Array<Int> = cast getFieldTrimmed(layer, "data");
+			if (data != null)
+			{
+				for (i in 0...data.length)
+				{
+					tilemap.data[Math.floor(i / tilemap.widthInTiles)][i % tilemap.widthInTiles] = data[i];
+				}
+			}
+			trace("[CitroOgmo3Loader] 1D data array parsed.");
+		}
+		else if (arrayMode == 1 && getFieldTrimmed(layer, "data2D") != null)
+		{
+			trace("[CitroOgmo3Loader] Parsing 2D data array...");
+			var data2D:Array<Array<Int>> = cast getFieldTrimmed(layer, "data2D");
+			if (data2D != null)
+			{
+				for (y in 0...data2D.length)
+				{
+					for (x in 0...data2D[y].length)
+					{
+						tilemap.data[y][x] = data2D[y][x];
+					}
+				}
+			}
+			trace("[CitroOgmo3Loader] 2D data array parsed.");
+		}
+		else if (getFieldTrimmed(layer, "dataCSV") != null)
+		{
+			trace("[CitroOgmo3Loader] Parsing CSV data...");
+			var dataCSV:String = cast getFieldTrimmed(layer, "dataCSV");
+			if (dataCSV != null)
+				tilemap.loadMapFromCSV(dataCSV, tileSize);
+			trace("[CitroOgmo3Loader] CSV data parsed.");
+		}
+		trace("[CitroOgmo3Loader] loadTilemap() END");
+		return tilemap;
+	}
 
-        trace("[CitroOgmo3Loader] Getting arrayMode...");
-        var arrayMode:Int = Std.int(getFieldTrimmed(layer, "arrayMode"));
-        trace("[CitroOgmo3Loader] arrayMode: " + arrayMode);
-        
-        if (arrayMode == 0 && getFieldTrimmed(layer, "data") != null) {
-            trace("[CitroOgmo3Loader] Parsing 1D data array...");
-            var data:Array<Int> = cast getFieldTrimmed(layer, "data");
-            if (data != null) {
-                for (i in 0...data.length) {
-                    tilemap.data[Math.floor(i / tilemap.widthInTiles)][i % tilemap.widthInTiles] = data[i];
-                }
-            }
-            trace("[CitroOgmo3Loader] 1D data array parsed.");
-        } else if (arrayMode == 1 && getFieldTrimmed(layer, "data2D") != null) {
-            trace("[CitroOgmo3Loader] Parsing 2D data array...");
-            var data2D:Array<Array<Int>> = cast getFieldTrimmed(layer, "data2D");
-            if (data2D != null) {
-                for (y in 0...data2D.length) {
-                    for (x in 0...data2D[y].length) {
-                        tilemap.data[y][x] = data2D[y][x];
-                    }
-                }
-            }
-            trace("[CitroOgmo3Loader] 2D data array parsed.");
-        } else if (getFieldTrimmed(layer, "dataCSV") != null) {
-            trace("[CitroOgmo3Loader] Parsing CSV data...");
-            var dataCSV:String = cast getFieldTrimmed(layer, "dataCSV");
-            if (dataCSV != null) tilemap.loadMapFromCSV(dataCSV, tileSize);
-            trace("[CitroOgmo3Loader] CSV data parsed.");
-        }
+	public function loadEntities(entityLoadCallback:Dynamic->Void, entityLayer:String = "entities"):Void
+	{
+		trace("[CitroOgmo3Loader] loadEntities() START");
+		if (level == null || !Reflect.hasField(level, "layers"))
+		{
+			trace("[CitroOgmo3Loader] No layers found.");
+			return;
+		}
 
-        trace("[CitroOgmo3Loader] loadTilemap() END");
-        return tilemap;
-    }
+		var layers:Array<Dynamic> = cast Reflect.field(level, "layers");
+		var layer:Dynamic = null;
 
-    public function loadEntities(entityLoadCallback:Dynamic->Void, entityLayer:String = "entities"):Void {
-        trace("[CitroOgmo3Loader] loadEntities() START");
-        if (level == null || !Reflect.hasField(level, "layers")) {
-            trace("[CitroOgmo3Loader] No layers found.");
-            return;
-        }
-        
-        var layers:Array<Dynamic> = cast Reflect.field(level, "layers");
-        var layer:Dynamic = null;
-        
-        for (l in layers) {
-            var name:String = Std.string(getFieldTrimmed(l, "name"));
-            if (name != null && name.trim() == entityLayer) {
-                layer = l;
-                break;
-            }
-        }
+		for (l in layers)
+		{
+			var name:String = Std.string(getFieldTrimmed(l, "name"));
+			if (name != null && name.trim() == entityLayer)
+			{
+				layer = l;
+				break;
+			}
+		}
 
-        if (layer != null && getFieldTrimmed(layer, "entities") != null) {
-            trace("[CitroOgmo3Loader] Found entities layer, iterating...");
-            var entities:Array<Dynamic> = cast getFieldTrimmed(layer, "entities");
-            if (entities != null) {
-                for (entity in entities) {
-                    entityLoadCallback(entity);
-                }
-            }
-            trace("[CitroOgmo3Loader] Entities iterated.");
-        } else {
-            trace("[CitroOgmo3Loader] No entities found in layer.");
-        }
-        trace("[CitroOgmo3Loader] loadEntities() END");
-    }
+		if (layer != null && getFieldTrimmed(layer, "entities") != null)
+		{
+			trace("[CitroOgmo3Loader] Found entities layer, iterating...");
+			var entities:Array<Dynamic> = cast getFieldTrimmed(layer, "entities");
+			if (entities != null)
+			{
+				for (entity in entities)
+				{
+					entityLoadCallback(entity);
+				}
+			}
+			trace("[CitroOgmo3Loader] Entities iterated.");
+		}
+		else
+		{
+			trace("[CitroOgmo3Loader] No entities found in layer.");
+		}
+		trace("[CitroOgmo3Loader] loadEntities() END");
+	}
+
+	static function getTileLayer(data:Dynamic, name:String):Dynamic
+	{
+		if (data == null || !Reflect.hasField(data, "layers"))
+			return null;
+		var layers:Array<Dynamic> = cast Reflect.field(data, "layers");
+		if (layers != null)
+		{
+			for (layer in layers)
+			{
+				var layerName:String = Std.string(getFieldTrimmed(layer, "name"));
+				if (layerName != null && layerName.trim() == name)
+					return layer;
+			}
+		}
+		return null;
+	}
 
 	static function getTilesetSize(projectData:Dynamic, label:String):Int
 	{
@@ -234,27 +322,20 @@ class CitroOgmo3Loader {
 		return 0;
 	}
 
-	static function getTilesetSize(label:String):Int {
-	    if (project == null || !Reflect.hasField(project, "tilesets")) return 0;
-	    var tilesets:Array<Dynamic> = cast Reflect.field(project, "tilesets");
-	    if (tilesets == null) return 0;
-	    for (ts in tilesets) {
-	        if (Std.string(getFieldTrimmed(ts, "label")).trim() == label) {
-	            return Std.int(getFieldTrimmed(ts, "tileWidth"));
-	        }
-	    }
-	    return 0;
+	static function getEntityLayer(data:Dynamic, name:String):Dynamic
+	{
+		if (data == null || !Reflect.hasField(data, "layers"))
+			return null;
+		var layers:Array<Dynamic> = cast Reflect.field(data, "layers");
+		if (layers != null)
+		{
+			for (layer in layers)
+			{
+				var layerName:String = Std.string(getFieldTrimmed(layer, "name"));
+				if (layerName != null && layerName.trim() == name)
+					return layer;
+			}
+		}
+		return null;
 	}
-
-    static function getEntityLayer(data:Dynamic, name:String):Dynamic {
-        if (data == null || !Reflect.hasField(data, "layers")) return null;
-        var layers:Array<Dynamic> = cast Reflect.field(data, "layers");
-        if (layers != null) {
-            for (layer in layers) {
-                var layerName:String = Std.string(getFieldTrimmed(layer, "name"));
-                if (layerName != null && layerName.trim() == name) return layer;
-            }
-        }
-        return null;
-    }
 }
