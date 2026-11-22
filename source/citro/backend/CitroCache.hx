@@ -74,9 +74,7 @@ class CitroCache {
 	{
 		var keys = [];
 		for (key in cache.keys())
-		{
 			keys.push(key);
-		}
 		for (key in keys)
 		{
 			var ext = key.split(".").pop().toLowerCase();
@@ -84,5 +82,7 @@ class CitroCache {
 				continue;
 			freeMemory(key);
 		}
+		cache.clear();
+		meta.clear();
 	}
 }
