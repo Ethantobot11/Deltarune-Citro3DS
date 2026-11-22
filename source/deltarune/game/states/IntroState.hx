@@ -35,6 +35,7 @@ class IntroState extends CitroState
 		var pulse = 1.0 + (Math.sin(pulseTime * 2.0) * 0.05);
 		background.scale.x = 2.5 * pulse;
 		background.scale.y = 2.5 * pulse;
+		background.screenCenter(XY);
 	}
 
 	function clickPlay()
