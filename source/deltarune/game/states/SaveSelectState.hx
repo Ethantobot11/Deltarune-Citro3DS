@@ -99,7 +99,7 @@ class SaveSelectState extends CitroState
 			Options.save_destination = chapterId;
 			Options.save_id = saveSelected;
 			Options.loadNewSave(chapterId, saveSelected);
-			CitroG.sound.play('romfs:/assets/sounds/save.cwav');
+			//CitroG.sound.play('romfs:/assets/sounds/save.cwav');
 			CitroG.switchState(new PlayState(Options.currentData.room_name));
 		}
 
@@ -111,7 +111,7 @@ class SaveSelectState extends CitroState
 		}
 
 		if (Controls.back.justPressed) {
-			CitroG.sound.play('romfs:/assets/sounds/hurt.cwav');
+			//CitroG.sound.play('romfs:/assets/sounds/hurt.cwav');
 			CitroG.switchState(new ChapterSelectState());
 		}
 	}
