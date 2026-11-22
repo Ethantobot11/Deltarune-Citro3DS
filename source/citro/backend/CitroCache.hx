@@ -69,8 +69,8 @@ class CitroCache {
         meta.remove(key);
     }
 
-	ublic
-	function clear()
+	
+	public function clear()
 	{
 		var keys = [];
 		for (key in cache.keys())
