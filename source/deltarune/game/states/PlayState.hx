@@ -53,6 +53,8 @@ class PlayState extends CitroState
 		super.create();
 		instance = this;
 
+		CitroG.sound.stopMusic();
+
 		map = new CitroOgmo3Loader('romfs:/assets/data/ogmoData.ogmo', 'romfs:/assets/data/levels/level$levelString.json');
 		if (map.level == null || !Reflect.hasField(map.level, "layers")) {
 			trace("CRITICAL ERROR: Level data failed to parse! Check encoding.");
