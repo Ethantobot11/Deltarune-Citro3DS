@@ -28,7 +28,9 @@ class Options extends CitroSubState
 		auto_run: false,
 		music_volume: 1.0,
 		sound_volume: 1.0,
-		display_screen: "bottom",
+		show_border: true,
+		border_style: "cyber",
+		display_screen: "top",
 		display_pos: "top-right"
 	};
 
@@ -58,7 +60,9 @@ class Options extends CitroSubState
 			auto_run: false,
 			music_volume: 1.0,
 			sound_volume: 1.0,
-			display_screen: "bottom",
+			show_border: true,
+			border_style: "cyber",
+			display_screen: "top",
 			display_pos: "top-right"
 		};
 
@@ -98,44 +102,45 @@ class Options extends CitroSubState
 		if (Game.framerateDisplay != null)
 		{
 			Game.framerateDisplay.visible = (generalData.show_fps == true);
-			positionOnScreen(Game.framerateDisplay, generalData.display_screen, generalData.display_pos);
+			positionOnScreen(Game.framerateDisplay, generalData.display_screen, generalData.display_pos, 0);
 		}
 		var mem:Dynamic = Reflect.field(Game, "memoryDisplay");
 		if (mem != null && Reflect.hasField(mem, "visible"))
 		{
 			mem.visible = (generalData.show_memory == true);
-			positionOnScreen(mem, generalData.display_screen, generalData.display_pos);
+			positionOnScreen(mem, generalData.display_screen, generalData.display_pos, 16);
 		}
 	}
 
-	static function positionOnScreen(t:CitroText, screen:String, pos:String)
+	static function positionOnScreen(t:CitroText, screen:String, pos:String, ?extraY:Float = 0)
 	{
-		var isTop = (screen != "bottom");
-		t.bottom = !isTop;
+		var isBottom = (screen == "bottom");
+		t.bottom = isBottom;
+		var W = isBottom ? CitroG.BOTTOM_WIDTH : CitroG.WIDTH;
+		var H = CitroG.HEIGHT;
 		var margin = 4;
-		var W = 400;
-		var H = 240;
+
 		switch (pos)
 		{
 			case "top-left":
 				t.x = margin;
-				t.y = margin;
+				t.y = margin + extraY;
 				t.alignment = LEFT;
 			case "top-right":
 				t.x = W - margin;
-				t.y = margin;
+				t.y = margin + extraY;
 				t.alignment = RIGHT;
 			case "bottom-left":
 				t.x = margin;
-				t.y = H - 22;
+				t.y = H - 22 + extraY;
 				t.alignment = LEFT;
 			case "bottom-right":
 				t.x = W - margin;
-				t.y = H - 22;
+				t.y = H - 22 + extraY;
 				t.alignment = RIGHT;
 			default:
 				t.x = W - margin;
-				t.y = margin;
+				t.y = margin + extraY;
 				t.alignment = RIGHT;
 		}
 	}
@@ -244,6 +249,18 @@ class Options extends CitroSubState
 		}
 		if (field == "show_fps" || field == "show_memory" || field == "display_screen" || field == "display_pos")
 			applyDisplaySettings();
+
+		if (field == "show_border" || field == "border_style")
+			applyBorderSettings();
+	}
+
+	public static function applyBorderSettings()
+	{
+		if (Game.border == null)
+			return;
+		Game.border.visible = (generalData.show_border == true);
+		if (generalData.show_border == true)
+			Game.border.switchTo(Std.string(generalData.border_style));
 	}
 
 	var options:Array<Option> = [];
@@ -296,6 +313,17 @@ class Options extends CitroSubState
 		options.push(showMemOption);
 		add(showMemOption);
 
+		var borderOnOption = new Option(options.length, 'Show Border', generalData.show_border, 'show_border', 'bool', {current: false});
+		options.push(borderOnOption);
+		add(borderOnOption);
+
+		var borderStyleOption = new Option(options.length, 'Border Style', generalData.border_style, 'border_style', 'enum', {
+			choices: ["simple", "hometown", "castle_town"],
+			current: false
+		});
+		options.push(borderStyleOption);
+		add(borderStyleOption);
+
 		var screenOption = new Option(options.length, 'Display Screen', generalData.display_screen, 'display_screen', 'enum', {
 			choices: ["top", "bottom"],
 			current: false
@@ -343,6 +371,11 @@ class Options extends CitroSubState
 		add(soundVolOption);
 
 		changeIndex();
+
+		var panel = new CitroSprite(0, 0);
+		panel.bottom = true;
+		panel.makeGraphic(CitroG.BOTTOM_WIDTH, CitroG.HEIGHT, 0xE6000000);
+		add(panel);
 	}
 
 	public function postCreate()
@@ -394,6 +427,20 @@ class Options extends CitroSubState
 		}
 	}
 
+	var scrollOffset:Int = 0;
+	static inline var VISIBLE_ROWS:Int = 8;
+	static inline var ROW_HEIGHT:Int = 26;
+
+	function updateOptionLayout()
+	{
+		for (i in 0...options.length)
+		{
+			var row = i - scrollOffset;
+			options[i].y = 14 + (row * ROW_HEIGHT);
+			options[i].visible = (row >= 0 && row < VISIBLE_ROWS);
+		}
+	}
+
 	function changeIndex(chng:Int = 0)
 	{
 		index += chng;
@@ -401,6 +448,12 @@ class Options extends CitroSubState
 			index = options.length - 1;
 		if (index >= options.length)
 			index = 0;
+		if (index < scrollOffset)
+			scrollOffset = index;
+		if (index > scrollOffset + VISIBLE_ROWS - 1)
+			scrollOffset = index - (VISIBLE_ROWS - 1);
+
+		updateOptionLayout();
 	}
 }
 
@@ -416,7 +469,8 @@ class Option extends CitroText
 
 	public function new(idx:Int, text:String, value:Dynamic, field:String, type:String, ?properties:OptionConfig)
 	{
-		super(-10, 20 + (idx * 30), text);
+		super(310, 0, text);
+		bottom = true;
 		loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 		alignment = RIGHT;
 		this.properties = properties;

@@ -98,6 +98,7 @@ class CitroG {
 	 * and renders on top of everything, similar to OpenFL's stage children.
 	 */
 	public static var globalOverlay:citro.object.CitroObject;
+	public static var globalOverlay2:citro.object.CitroObject;
 
 	/**
      * Global sound manager, similar to FlxG.sound in HaxeFlixel.

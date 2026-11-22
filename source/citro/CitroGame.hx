@@ -105,6 +105,19 @@ class CitroGame {
 				CitroG.globalOverlay.update();
 			}
 
+			if (CitroG.globalOverlay2 != null && !CitroG.globalOverlay2.isDestroyed)
+			{
+				if (CitroG.globalOverlay2.bottom)
+				{
+					untyped __cpp__("C2D_SceneBegin(bottomScreen)");
+				}
+				else
+				{
+					untyped __cpp__("C2D_SceneBegin(topScreen)");
+				}
+				CitroG.globalOverlay2.update();
+			}
+
 			untyped __cpp__('
 				C2D_Flush();
 				C3D_FrameEnd(0);
