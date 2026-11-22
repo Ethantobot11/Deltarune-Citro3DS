@@ -26,6 +26,8 @@ class SaveSelectState extends CitroState
 		super.create();
 		instance = this;
 		chapterId = Game.currentChapterId;
+
+		CitroG.sound.playMusic('romfs:/assets/music/DRONE.cwav', 0.8, true);
 		var bg = new CitroSprite(0, 0);
 		bg.makeGraphic(400, 240, 0xFF000000);
 		add(bg);
