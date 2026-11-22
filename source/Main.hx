@@ -9,7 +9,7 @@ import deltarune.Controls;
 import deltarune.ConsoleBorder;
 import deltarune.assets.GameAssets;
 import deltarune.assets.SysAssetSystem;
-import deltarune.game.states.MenuState;
+import deltarune.game.states.IntroState;
 import deltarune.game.states.substates.Options;
 
 class Main
