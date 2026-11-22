@@ -95,7 +95,7 @@ class ChapterSelectState extends CitroState
 			var chapterContainer = new CitroGroup();
 			var data = chapterData[i];
 
-			var numText = new CitroText(4, 5 + (30 * i), data.chapterSelect.label);
+			var numText = new CitroText(24, 5 + (30 * i), data.chapterSelect.label);
 			numText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 			numText.color = 0xFFFFFFFF;
 			chapterContainer.add(numText);
@@ -123,13 +123,14 @@ class ChapterSelectState extends CitroState
 
 		selectorSprite = new CitroSprite(10, 12);
 		selectorSprite.loadGraphic("romfs:/assets/images/ui/chapter_select/selector.t3x");
-		//selectorSprite.scale.x = 2;
-		//selectorSprite.scale.y = 2;
+		selectorSprite.scale.x = 1.5;
+		selectorSprite.scale.y = 1.5;
 		add(selectorSprite);
 
 		var infoText = new CitroText(6, 210, "(C) Toby Fox 2018-2025\nDELTARUNE v1.0");
 		infoText.loadFont("romfs:/assets/fonts/8bitoperator_jve.bcfnt");
 		infoText.color = 0xFF808080;
+		infoText.bottom = true;
 		add(infoText);
 
 		quitText = new CitroText(280, 210, "Quit");

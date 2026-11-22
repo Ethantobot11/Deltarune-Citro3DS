@@ -206,13 +206,9 @@ class CitroText extends CitroObject {
 		return this;
 	}
 
-	override function destroy() {
+	override function destroy()
+	{
 		super.destroy();
-		untyped __cpp__('
-			if (defaultFont) {
-				C2D_FontFree(defaultFont);
-				defaultFont = nullptr;
-			}
-		');
+		defaultFont = null;
 	}
 }

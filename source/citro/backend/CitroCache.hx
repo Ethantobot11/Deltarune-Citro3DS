@@ -69,15 +69,20 @@ class CitroCache {
         meta.remove(key);
     }
 
-    public function clear() {
-        var keys = [];
-        for (key in cache.keys()) {
-            keys.push(key);
-        }
-        for (key in keys) {
-            freeMemory(key);
-        }
-        cache.clear();
-        meta.clear();
-    }
+	ublic
+	function clear()
+	{
+		var keys = [];
+		for (key in cache.keys())
+		{
+			keys.push(key);
+		}
+		for (key in keys)
+		{
+			var ext = key.split(".").pop().toLowerCase();
+			if (ext == "bcfnt")
+				continue;
+			freeMemory(key);
+		}
+	}
 }
