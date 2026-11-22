@@ -22,37 +22,45 @@ class ChapterSelectState extends CitroState
 	public var chapterLabels:Array<CitroGroup> = [];
 	public var chapterData:Array<ChapterFile> = [];
 	static function sanitizeJson(raw:String):String {
-	    if (raw == null || raw.length == 0) return "";
-	    if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
-	        raw = raw.substr(3);
-	    } else if (raw.length >= 2 && raw.charCodeAt(0) == 0xFF && raw.charCodeAt(1) == 0xFE) {
-	        raw = raw.substr(2);
-	    } else if (raw.length > 0 && (raw.charCodeAt(0) == 0xFEFF || raw.charCodeAt(0) == 0xFFFE)) {
-	        raw = raw.substr(1);
-	    }
-	
-	    var buf = new StringBuf();
-	    for (i in 0...raw.length) {
-	        var c = raw.charCodeAt(i);
-	        if (c == 9 || c == 10 || c == 13) { buf.addChar(c); continue; }
-	        if (c == 0 || c == 65533 || c == 0xFFFE) continue;
-	        if (c >= 32) buf.addChar(c);
-	    }
-	    raw = buf.toString();
-	    var first = -1, firstChar = 0;
-	    for (i in 0...raw.length) {
-	        var c = raw.charCodeAt(i);
-	        if (c == '{'.code || c == '['.code) { first = i; firstChar = c; break; }
-	    }
-	    if (first < 0) return raw;
-	    var last = -1;
-	    for (i in raw.length - 1...first) {
-	        var c = raw.charCodeAt(i);
-	        if ((firstChar == '{'.code && c == '}'.code) || (firstChar == '['.code && c == ']'.code)) { last = i; break; }
-	    }
-	    if (last < 0) return raw;
-	    return raw.substr(first, last - first + 1);
-	}
+        if (raw == null || raw.length == 0) return "";
+        if (raw.length >= 3 && raw.charCodeAt(0) == 0xEF && raw.charCodeAt(1) == 0xBB && raw.charCodeAt(2) == 0xBF) {
+            raw = raw.substr(3);
+        } else if (raw.length >= 2 && raw.charCodeAt(0) == 0xFF && raw.charCodeAt(1) == 0xFE) {
+            raw = raw.substr(2);
+        } else if (raw.length > 0 && (raw.charCodeAt(0) == 0xFEFF || raw.charCodeAt(0) == 0xFFFE)) {
+            raw = raw.substr(1);
+        }
+
+        var buf = new StringBuf();
+        for (i in 0...raw.length) {
+            var c = raw.charCodeAt(i);
+            if (c == 9 || c == 10 || c == 13) { buf.addChar(c); continue; }
+            if (c == 0 || c == 65533 || c == 0xFFFE) continue;
+            if (c >= 32) buf.addChar(c);
+        }
+        raw = buf.toString();
+        
+        var first = -1, firstChar = 0;
+        for (i in 0...raw.length) {
+            var c = raw.charCodeAt(i);
+            if (c == '{'.code || c == '['.code) { first = i; firstChar = c; break; }
+        }
+        if (first < 0) return raw;
+        
+        var last = -1;
+        var i = raw.length - 1;
+        while (i >= first) {
+            var c = raw.charCodeAt(i);
+            if ((firstChar == '{'.code && c == '}'.code) || (firstChar == '['.code && c == ']'.code)) { 
+                last = i; 
+                break; 
+            }
+            i--;
+        }
+        if (last < 0) return raw;
+        
+        return raw.substr(first, last - first + 1);
+    }
 
 	override public function create()
 	{
@@ -72,25 +80,16 @@ class ChapterSelectState extends CitroState
 			try {
 				var cleanRaw = sanitizeJson(raw);
 				chapter = cast Json.parse(cleanRaw);
+				chapterData.push(chapter);
 			} catch (e:Dynamic) {
 				trace('Error parsing Chapter JSON for $chapterFile: $e');
 				continue;
 			}
-
-			if (chapter.previousChapter != null && chapter.previousChapter != "") {
-				var inserted = false;
-				for (i in 0...chapterData.length) {
-					if (chapterData[i].id == chapter.previousChapter) {
-						chapterData.insert(i + 1, chapter);
-						inserted = true;
-						break;
-					}
-				}
-				if (!inserted) chapterData.push(chapter);
-			} else {
-				chapterData.push(chapter);
-			}
 		}
+
+		chapterData.sort(function(a, b) {
+			return extractChapterNumber(a.id) - extractChapterNumber(b.id);
+		});
 
 		for (i in 0...chapterData.length) {
 			var chapterContainer = new CitroGroup();
@@ -138,6 +137,18 @@ class ChapterSelectState extends CitroState
 		add(quitText);
 
 		setSelection(currentSelection);
+	}
+
+	static function extractChapterNumber(id:String):Int {
+		if (id == null) return 9999;
+		var nums = "";
+		for (i in 0...id.length) {
+			var c = id.charCodeAt(i);
+			if (c >= '0'.code && c <= '9'.code) {
+				nums += String.fromCharCode(c);
+			}
+		}
+		return nums == "" ? 9999 : Std.parseInt(nums);
 	}
 
 	override public function update(delta:Int)
